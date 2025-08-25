@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>타이탄클래스 카카오톡 입장자 체크봇 · Strict</title>
+  <style>
+    :root{--bg:#ffffff;--card:#ffffff;--muted:#6b7280;--text:#111827;--accent:#e53935;--ok:#16a34a;--warn:#f59e0b;--bad:#ef4444;--line:#e5e7eb;--surface:#f8fafc}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    .wrap{max-width:980px;margin:28px auto;padding:0 16px}
+    h1{font-size:22px;margin:0 0 8px}
+    .sub{color:var(--muted);margin-bottom:20px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
+    .grid{display:grid;gap:12px}
+    @media(min-width:880px){.grid.cols-3{grid-template-columns:1.2fr 1fr 1fr}}
+    label{display:block;color:var(--muted);margin-bottom:6px}
+    input[type=file], textarea{width:100%;background:#ffffff;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 12px;outline:none}
+    textarea{min-height:120px;resize:vertical}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .btn{appearance:none;border:1px solid var(--line);background:#ffffff;color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer}
+    .btn:hover{border-color:var(--accent)}
+    .btn.acc{background:var(--accent);border-color:var(--accent);color:#0c1424}
+    .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+    .pill.ok{border-color:rgba(74,210,149,.25);color:var(--ok)}
+    .pill.warn{border-color:rgba(246,196,69,.25);color:var(--warn)}
+    .pill.bad{border-color:rgba(255,123,123,.25);color:var(--bad)}
+    table{width:100%;border-collapse:collapse;border:1px solid var(--line);overflow:auto;background:var(--card);border-radius:12px}
+    th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+    th{color:#111827;font-weight:600;background:#f9fafb;position:sticky;top:0}
+    .hint{color:var(--muted);font-size:12px}
+    .footer{color:var(--muted);font-size:12px;margin-top:24px}
+    .err{color:#ffb3b3;font-family:ui-monospace,monospace}
+    .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .logo{height:80px;width:auto;display:block;max-width:100%}
+  .brand{display:flex;align-items:center;gap:12px;margin:8px 0 16px}
+  .logo{height:48px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="brand">
+  <!-- PNG 대신 한 파일 내장 가능한 SVG 로고 -->
+  <svg class="logo" viewBox="0 0 173 60" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TITAN CLASS">
+    <!-- 빨간 웨지 -->
+    <polygon points="10,10 26,10 20,20 34,20 18,50 10,50 23,28 10,28" fill="#e53935"/>
+    <!-- TITAN -->
+    <text x="45" y="30" font-size="26" font-weight="800" fill="#111827" font-family="Inter,Segoe UI,Arial,Helvetica,sans-serif">TITAN</text>
+    <!-- CLASS -->
+    <text x="45" y="48" font-size="14" font-weight="700" letter-spacing="6" fill="#111827" font-family="Inter,Segoe UI,Arial,Helvetica,sans-serif">CLASS</text>
+  </svg>
+</header>
+    <header class="brand"><img class="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAA8CAYAAADv5dHcAAAACXBIWXMAAAsSAAALEgHS3X78AAABV0lEQVR4nO3RMQEAIAwEsZJ/0y0l1yR2I2cYgR8n3Zp1gkB5cjg3oV8mWQv1Pj3k2m7vNwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8J4d8c8lX2l6cQq2c1N0n9iM3l1s0bWbqkS4KX2Yg8eV0o4s4v66v2D2f7lY4pQGd0H1a2U9q7J8Hqf4k3p5m0gkQx6bQqk0m5p8Ww4kD2k8Y3t7w2m5gQqk4k5p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4r8tq7fW83qQyTz2m5kQak4k5p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4r8v0Aj5vJ1y0r7oQAAAABJRU5ErkJggg==" alt="TITAN CLASS" onerror="this.style.display='none'"/></header>
+    <h1>타이탄클래스 카카오톡 입장자 체크봇 <span class="hint">· Strict(채팅은 이름+4자리, 로스터는 오른쪽 4자리)</span></h1>
+    <div class="sub">
+      카톡 대화 <span class="hint">.txt</span>와 <b>로스터</b>(한 줄에 전화번호/설명/이름 등 아무 문자열) 넣고 <b>실행</b>을 누르세요.<br/>
+      로스터는 각 줄의 <b>오른쪽 숫자 덩어리의 마지막 4자리</b>를 추출해 기준값으로 사용합니다. (예: <span class="mono">010-1234-5678 → 5678</span>)<br/>
+      채팅은 <b>이름 + 4자리</b>가 있는 닉네임만 입장 후보로 인정합니다. (예: <span class="mono">권지혁/5678</span>, <span class="mono">권지혁 5678</span>, <span class="mono">권지혁5678</span>)
+    </div>
+
+    <div class="card grid cols-3">
+      <div>
+        <label>1) 카카오톡 대화 <span class="hint">.txt</span></label>
+        <input id="chatFile" type="file" accept=".txt" />
+        <div class="hint">형식: “… <em>이름/4자리</em>님이 입장하셨습니다.” 등</div>
+      </div>
+      <div>
+        <label>2) 로스터 <span class="hint">.txt</span> (한 줄에 하나)</label>
+        <input id="rosterFile" type="file" accept=".txt" />
+        <div class="hint">또는 오른쪽 칸에 직접 붙여넣기</div>
+      </div>
+      <div>
+        <label>로스터 직접 입력(선택)</label>
+        <textarea id="rosterText" placeholder="예)&#10;홍길동 010-1234-5678&#10;이순신 010-0000-5678&#10;메모만 있는 줄도 가능(4자리 없으면 예외)"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <button id="runBtn" class="btn acc">실행</button>
+        <button id="demoBtn" class="btn">데모로 테스트</button>
+        <span id="pills" class="row"></span>
+      </div>
+      <div id="err" class="err" style="margin-top:8px"></div>
+      <div class="hint" style="margin-top:8px">채팅 인식: <b>이름/4자리</b>, <b>이름 4자리</b>, <b>이름4자리</b> (이름 없이 4자리만 있으면 <b>예외</b>).</div>
+    </div>
+
+    <div id="results" class="grid" style="gap:16px"></div>
+
+    <div class="footer">TitanClass Strict · 모든 처리는 브라우저 내부에서만 수행됩니다.</div>
+  </div>
+
+<script>
+// ===== 정규식 =====
+const JOIN_PAT = /(.*?)님이\s*(입장하셨습니다|들어왔습니다|입장했습니다|들어오셨습니다)\./;
+const LEAVE_PAT = /(.*?)님이\s*(퇴장하셨습니다|나갔습니다|퇴장했습니다|나가셨습니다)\./;
+
+// ===== 유틸 =====
+const $ = (id)=>document.getElementById(id);
+function setError(msg){ document.getElementById('err').textContent = msg||""; }
+function setPills({joined,left,exceptions,rosterExceptions}){
+  const el=document.getElementById('pills'); el.innerHTML='';
+  const pill=(txt,cls)=>{const s=document.createElement('span'); s.className='pill '+cls; s.textContent=txt; return s;};
+  el.appendChild(pill(`입장 ${joined}`,'ok'));
+  el.appendChild(pill(`퇴장 ${left}`,'bad'));
+  el.appendChild(pill(`예외(채팅) ${exceptions}`,'warn'));
+  el.appendChild(pill(`예외(명단) ${rosterExceptions}`,'warn'));
+}
+function csvEscape(v){ if(v==null)v=""; const s=String(v); if(/[",\n]/.test(s)) return '"'+s.replace(/"/g,'""')+'"'; return s; }
+function toCSV(rows){ return rows.map(r=> r.map(csvEscape).join(",")).join("\r\n"); }
+function downloadCSV(name, rows){ const blob=new Blob(["\ufeff"+toCSV(rows)],{type:"text/csv;charset=utf-8;"}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(url),500); }
+async function readText(file){ return await file.text(); }
+
+// 로스터 한 줄에서 "오른쪽 숫자 덩어리"의 마지막 4자리
+function extractRosterLast4(line){
+  const nums = String(line).match(/\d+/g);
+  if(!nums || !nums.length) return null;
+  const rightMost = nums[nums.length-1];
+  if(rightMost.length < 4) return null;
+  return rightMost.slice(-4);
+}
+
+// 채팅 닉네임에서 "이름 + 4자리"만 허용 (슬래시/하이픈/공백/무구분 허용)
+function parseNickNameDigits_STRICT(nick){
+  const m = String(nick).trim().match(/^\s*([A-Za-z0-9가-힣·\s]+?)\s*(?:[\/-]?\s*)?(\d{4})\s*$/);
+  if(!m) return null; const name=(m[1]||'').trim(); if(!name) return null; return {name, digits:m[2]};
+}
+
+function parseChat_STRICT(text){
+  const lines=text.split(/\r?\n/), joined=[], left=[];
+  for(const raw of lines){ const line=raw.trim(); if(!line) continue;
+    let m=line.match(JOIN_PAT); if(m){ joined.push(m[1].trim()); continue; }
+    m=line.match(LEAVE_PAT); if(m){ left.push(m[1].trim()); continue; } }
+  const digitsMap=new Map(), exceptions=[], rawJoinedNick=[];
+  for(const nick of joined){ rawJoinedNick.push(nick); const s=parseNickNameDigits_STRICT(nick);
+    if(!s){ exceptions.push(nick); continue; }
+    const ex=`${s.name}/${s.digits}`; if(!digitsMap.has(s.digits)) digitsMap.set(s.digits,new Set()); digitsMap.get(s.digits).add(ex); }
+  return {digitsMap,leftCount:left.length,joinCount:joined.length,exceptions,rawJoinedNick};
+}
+
+function showTable(title, headers, rows, downloads){
+  const wrap=document.createElement('div'); wrap.className='card';
+  const top=document.createElement('div'); top.className='row';
+  const h=document.createElement('h3'); h.textContent=title; h.style.margin='0 8px 0 0'; top.appendChild(h);
+  (downloads||[]).forEach(d=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=d.label; b.onclick=d.onClick; top.appendChild(b); });
+  wrap.appendChild(top);
+  const table=document.createElement('table'); const thead=document.createElement('thead'); const trh=document.createElement('tr');
+  headers.forEach(x=>{ const th=document.createElement('th'); th.textContent=x; trh.appendChild(th); }); thead.appendChild(trh); table.appendChild(thead);
+  const tbody=document.createElement('tbody');
+  rows.forEach(r=>{ const tr=document.createElement('tr'); r.forEach(c=>{ const td=document.createElement('td'); td.textContent = (c==null?'':String(c)); tr.appendChild(td); }); tbody.appendChild(tr); });
+  table.appendChild(tbody); wrap.appendChild(table);
+  document.getElementById("results").appendChild(wrap);
+}
+
+function processAndRender({chatText, rosterText}){
+  // 1) 채팅 파싱(STRICT) → digitsMap
+  const {digitsMap, leftCount, joinCount, exceptions, rawJoinedNick} = parseChat_STRICT(chatText);
+
+  // 2) 로스터 파싱 → 각 줄의 마지막 4자리
+  const rosterLines = rosterText.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  const rosterRows = []; // [name_or_roster, last4, status, matched_examples, notes]
+  const rosterExceptions = [];
+  const by4 = new Map(); // last4 -> indices in rosterRows
+  rosterLines.forEach(line => {
+    const d = extractRosterLast4(line);
+    if(!d){ rosterExceptions.push(line); rosterRows.push([line,'','예외(4자리 없음)','', '']); return; }
+    const idx = rosterRows.push([line, d, '', '', '']) - 1;
+    if(!by4.has(d)) by4.set(d, []);
+    by4.get(d).push(idx);
+  });
+
+  // 3) 매칭 로직 (last4 기준)
+  for(const [d, idxList] of by4.entries()){
+    const examples = digitsMap.get(d) ? Array.from(digitsMap.get(d)).sort() : [];
+    const inChat = examples.length > 0;
+    if(idxList.length === 1){
+      const idx = idxList[0];
+      if(inChat){
+        rosterRows[idx][2] = '입장';
+        rosterRows[idx][3] = examples.join('; ');
+        // 동일 4자리 → 채팅 이름을 표의 첫 열에 표시
+        const names = Array.from(new Set(examples.map(ex => ex.split('/')[0].trim()).filter(Boolean)));
+        if(names.length === 1){
+          rosterRows[idx][0] = names[0];
+        }else if(names.length > 1){
+          rosterRows[idx][0] = names.join('; ');
+          rosterRows[idx][4] = ((rosterRows[idx][4]||'') + ' 다수 이름 매칭됨').trim();
+        }
+      } else {
+        rosterRows[idx][2] = '미입장';
+      }
+    }else{
+      // 같은 4자리가 명단에 여러 줄 → 애매 → 확인 필요
+      idxList.forEach(idx => {
+        if(inChat){
+          rosterRows[idx][2] = '중복 4자리 확인필요';
+          rosterRows[idx][3] = examples.join('; ');
+          rosterRows[idx][4] = '같은 4자리 번호가 명단에 여러 줄 존재(자동 미입장 처리)';
+        }else{
+          rosterRows[idx][2] = '미입장';
+        }
+      });
+    }
+  }
+
+  // 3.5) 상태별 표시 규칙: 미입장/중복은 name 빈칸 처리
+  rosterRows.forEach(r => { if (r[2] === '미입장' || r[2].startsWith('중복 4자리')) r[0] = ''; });
+
+  // 4) 명단 외 입장자 (채팅에는 있는데 명단 4자리에 없는 경우)
+  const rosterLast4Set = new Set(rosterRows.map(r=>r[1]).filter(Boolean));
+  const extra = [];
+  digitsMap.forEach((examples, d)=>{
+    if(!rosterLast4Set.has(d)){
+      Array.from(examples).sort().forEach(ex => extra.push([ex]));
+    }
+  });
+
+  // 5) 출력
+  document.getElementById("results").innerHTML='';
+  setPills({joined:joinCount,left:leftCount,exceptions:exceptions.length,rosterExceptions:rosterExceptions.length});
+  showTable('내 명단 기준 상태 (titan_attendance_report_strict.csv)', ['name','last4','status','matched_examples','notes'], rosterRows,[{label:'CSV 저장', onClick:()=>downloadCSV('titan_attendance_report_strict.csv', [['name','last4','status','matched_examples','notes'],...rosterRows])}]);
+  showTable('명단 외 입장자 (titan_joined_extra_strict.csv)', ['joined_example(name/last4)'], extra,[{label:'CSV 저장', onClick:()=>downloadCSV('titan_joined_extra_strict.csv', [['joined_example(name/last4)'],...extra])}]);
+  if(rosterExceptions.length) showTable('예외(명단에 4자리 없음) (titan_roster_exceptions_strict.csv)', ['roster_line'], rosterExceptions.map(s=>[s]),[{label:'CSV 저장', onClick:()=>downloadCSV('titan_roster_exceptions_strict.csv', [['roster_line'], ...rosterExceptions.map(s=>[s])])}]);
+  if(exceptions.length) showTable('예외(채팅: 이름+4자리 아님) (titan_chat_exceptions_strict.csv)', ['raw_nick'], exceptions.map(s=>[s]),[{label:'CSV 저장', onClick:()=>downloadCSV('titan_chat_exceptions_strict.csv', [['raw_nick'], ...exceptions.map(s=>[s])])}]);
+  showTable('원시 입장 로그 (titan_raw_joins_strict.csv)', ['joined_nickname'], rawJoinedNick.map(s=>[s]),[{label:'CSV 저장', onClick:()=>downloadCSV('titan_raw_joins_strict.csv', [['joined_nickname'], ...rawJoinedNick.map(s=>[s])])}]);
+}
+
+async function runMain(){
+  try{
+    setError('');
+    const chatFile=document.getElementById('chatFile').files[0];
+    const rosterFile=document.getElementById('rosterFile').files[0];
+    const rosterTextRaw=document.getElementById('rosterText').value.trim();
+    if(!chatFile) { setError('대화 txt 파일을 선택하세요.'); return; }
+    const chatText=await readText(chatFile);
+    let rosterText='';
+    if(rosterTextRaw){ rosterText=rosterTextRaw; }
+    else if(rosterFile){ rosterText=await readText(rosterFile); }
+    else { setError('명단 파일을 업로드하거나 텍스트로 입력하세요.'); return; }
+    processAndRender({chatText, rosterText});
+  }catch(err){ setError('오류: '+ err.message); console.error(err); }
+}
+
+function runDemo(){
+  setError('');
+  const rosterText=[
+    '정은희 010-1111-2508',
+    '김하윤 010-2222-4064',
+    '심세진 010-3333-3315',
+    '걸민 010-4444-4850',
+    '이송이 010-5555-5410',
+    '중복 예시 A 010-0000-7772',
+    '중복 예시 B 010-9999-7772',
+    '메모만 있고 4자리 없음'
+  ].join('\n');
+  const chatText=[
+    '2025.08.10 오후 8:01 - 정은희/2508님이 입장하셨습니다.',
+    '2025.08.10 오후 8:02 - 김하윤 4064님이 들어왔습니다.',
+    '2025.08.10 오후 8:03 - 심세진/3315님이 입장하셨습니다.',
+    '2025.08.10 오후 8:04 - 걸민 4850님이 입장하셨습니다.',
+    '2025.08.10 오후 8:05 - 홍길동7772님이 입장하셨습니다.',
+    '2025.08.10 오후 8:06 - 7772님이 입장하셨습니다.',
+    '2025.08.10 오후 8:07 - 민수님이 입장하셨습니다.'
+  ].join('\n');
+  processAndRender({chatText, rosterText});
+}
+
+// DOM 로드 후 바인딩
+window.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('runBtn').addEventListener('click', runMain);
+  document.getElementById('demoBtn').addEventListener('click', runDemo);
+});
+</script>
+</body>
+</html>
