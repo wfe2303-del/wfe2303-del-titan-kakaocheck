@@ -3,274 +3,1417 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>타이탄클래스 카카오톡 입장자 체크봇 · Strict</title>
+  <title>클래스어라운드 · 운영봇 대시보드</title>
   <style>
-    :root{--bg:#ffffff;--card:#ffffff;--muted:#6b7280;--text:#111827;--accent:#e53935;--ok:#16a34a;--warn:#f59e0b;--bad:#ef4444;--line:#e5e7eb;--surface:#f8fafc}
+    :root{
+      --bg:#020617;
+      --card:#020617;
+      --surface:#020617;
+      --line:#1f2937;
+      --text:#e5e7eb;
+      --muted:#6b7280;
+      --accent:#38bdf8;
+      --accent-soft:#0f172a;
+      --accent-strong:#0ea5e9;
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --radius:14px;
+      --gap:14px;
+      --ctl-h:42px;
+      --shadow-soft:0 18px 40px rgba(15,23,42,.7);
+      --shadow-card:0 14px 30px rgba(15,23,42,.85);
+      --border-strong:1px solid rgba(148,163,184,.6);
+      --border-soft:1px solid rgba(30,64,175,0.8);
+      --tab-pill-radius:999px;
+    }
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-    .wrap{max-width:980px;margin:28px auto;padding:0 16px}
-    h1{font-size:22px;margin:0 0 8px}
-    .sub{color:var(--muted);margin-bottom:20px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
-    .grid{display:grid;gap:12px}
-    @media(min-width:880px){.grid.cols-3{grid-template-columns:1.2fr 1fr 1fr}}
-    label{display:block;color:var(--muted);margin-bottom:6px}
-    input[type=file], textarea{width:100%;background:#ffffff;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 12px;outline:none}
-    textarea{min-height:120px;resize:vertical}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .btn{appearance:none;border:1px solid var(--line);background:#ffffff;color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer}
-    .btn:hover{border-color:var(--accent)}
-    .btn.acc{background:var(--accent);border-color:var(--accent);color:#0c1424}
-    .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
-    .pill.ok{border-color:rgba(74,210,149,.25);color:var(--ok)}
-    .pill.warn{border-color:rgba(246,196,69,.25);color:var(--warn)}
-    .pill.bad{border-color:rgba(255,123,123,.25);color:var(--bad)}
-    table{width:100%;border-collapse:collapse;border:1px solid var(--line);overflow:auto;background:var(--card);border-radius:12px}
-    th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-    th{color:#111827;font-weight:600;background:#f9fafb;position:sticky;top:0}
-    .hint{color:var(--muted);font-size:12px}
-    .footer{color:var(--muted);font-size:12px;margin-top:24px}
-    .err{color:#ffb3b3;font-family:ui-monospace,monospace}
-    .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
-    .brand{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-  .logo{height:80px;width:auto;display:block;max-width:100%}
-  .brand{display:flex;align-items:center;gap:12px;margin:8px 0 16px}
-  .logo{height:48px}
-</style>
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+      background:radial-gradient(circle at top left,#0f172a 0,#020617 50%,#000 100%);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+    .app-shell{
+      max-width:1180px;
+      width:100%;
+      margin:20px auto 32px;
+      padding:0 16px;
+    }
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:20px;
+      gap:12px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .brand-logo{
+      width:40px;
+      height:40px;
+      border-radius:16px;
+      background:radial-gradient(circle at 25% 25%,#38bdf8 0,#0ea5e9 35%,#0f172a 80%);
+      box-shadow:0 10px 30px rgba(56,189,248,.6);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .brand-logo::before{
+      content:"";
+      position:absolute;
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      border:3px solid rgba(15,23,42,.9);
+      box-shadow:0 0 0 3px rgba(15,23,42,.7);
+    }
+    .brand-logo::after{
+      content:"CA";
+      font-size:10px;
+      font-weight:700;
+      color:#e5f6ff;
+      letter-spacing:.04em;
+    }
+    .brand-text-title{
+      font-size:20px;
+      font-weight:700;
+      letter-spacing:.03em;
+    }
+    .brand-text-sub{
+      font-size:11px;
+      color:var(--muted);
+    }
+    .tab-group{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      background:rgba(15,23,42,.9);
+      border-radius:999px;
+      padding:4px;
+      border:1px solid rgba(51,65,85,.8);
+      box-shadow:0 14px 35px rgba(15,23,42,.8);
+    }
+    .tab-button{
+      border:none;
+      outline:none;
+      background:transparent;
+      color:var(--muted);
+      font-size:11px;
+      padding:6px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:4px;
+      transition:all .16s ease-out;
+      white-space:nowrap;
+    }
+    .tab-button span.icon{
+      font-size:13px;
+    }
+    .tab-button.active{
+      background:radial-gradient(circle at 20% 0,#38bdf8 0,#0ea5e9 40%,#1e293b 100%);
+      color:#e5f6ff;
+      box-shadow:0 6px 18px rgba(56,189,248,.5);
+    }
+    .tab-button:not(.active):hover{
+      background:rgba(30,64,175,.45);
+      color:#e5e7eb;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns: minmax(0,1.4fr) minmax(0,1.1fr);
+      gap:var(--gap);
+    }
+    .layout-single{
+      display:block;
+    }
+
+    .card{
+      background:radial-gradient(circle at top left,#020617 0,#020617 58%,#020617 100%);
+      border-radius:var(--radius);
+      border:var(--border-soft);
+      box-shadow:var(--shadow-card);
+      padding:16px 16px 14px;
+      position:relative;
+      overflow:hidden;
+    }
+    .card-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:10px;
+      gap:8px;
+    }
+    .card-title{
+      font-size:13px;
+      font-weight:600;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .card-title-pill{
+      font-size:10px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.6);
+      color:var(--muted);
+    }
+    .card-sub{
+      font-size:11px;
+      color:var(--muted);
+      margin-bottom:10px;
+    }
+    .pill-status{
+      font-size:10px;
+      padding:2px 7px;
+      border-radius:999px;
+      border:1px solid rgba(74,222,128,.8);
+      color:#bbf7d0;
+      background:rgba(21,128,61,.2);
+    }
+
+    .split{
+      display:grid;
+      grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);
+      gap:var(--gap);
+    }
+
+    .log-panel{
+      height:360px;
+      background:radial-gradient(circle at top,#020617 0,#020617 60%,#020617 100%);
+      border-radius:12px;
+      border:1px solid rgba(30,64,175,.7);
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      font-size:11px;
+      overflow:hidden;
+    }
+    .log-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      color:var(--muted);
+      margin-bottom:4px;
+      font-size:10px;
+    }
+    .log-body{
+      flex:1;
+      overflow:auto;
+      padding-right:4px;
+    }
+    .log-line{
+      padding:2px 0;
+      border-bottom:1px dashed rgba(30,64,175,.4);
+      font-family:ui-monospace,Menlo,Consolas,"SF Mono",monospace;
+      word-break:break-all;
+    }
+
+    .field-group{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-bottom:10px;
+    }
+    .field-label{
+      font-size:11px;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:6px;
+    }
+    .field-label span.right{
+      font-size:10px;
+    }
+    .input, .select, .textarea{
+      background:#020617;
+      border-radius:10px;
+      border:1px solid rgba(30,64,175,.8);
+      height:var(--ctl-h);
+      color:var(--text);
+      font-size:12px;
+      padding:0 10px;
+      outline:none;
+      width:100%;
+      font-family:inherit;
+      transition:border .16s ease,box-shadow .16s ease,background .16s ease;
+    }
+    .input:focus, .select:focus, .textarea:focus{
+      border-color:#38bdf8;
+      box-shadow:0 0 0 1px rgba(56,189,248,.4);
+      background:#020617;
+    }
+    .textarea{
+      min-height:90px;
+      padding:8px 10px;
+      resize:vertical;
+      line-height:1.4;
+    }
+    .select{
+      padding-right:26px;
+    }
+
+    .row{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .row.wrap{flex-wrap:wrap;}
+    .row.right{justify-content:flex-end;}
+    .row.between{justify-content:space-between;}
+
+    .btn{
+      border:none;
+      outline:none;
+      border-radius:999px;
+      font-size:11px;
+      padding:0 14px;
+      height:30px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      cursor:pointer;
+      white-space:nowrap;
+      font-weight:500;
+      letter-spacing:.02em;
+      transition:all .16s ease-out;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,#38bdf8,#0ea5e9);
+      color:#0b1120;
+      box-shadow:0 8px 22px rgba(56,189,248,.7);
+      border:1px solid rgba(125,211,252,.9);
+    }
+    .btn-primary:hover{filter:brightness(1.05);transform:translateY(-1px);}
+    .btn-ghost{
+      background:rgba(15,23,42,.9);
+      color:var(--muted);
+      border:1px solid rgba(51,65,85,.9);
+    }
+    .btn-ghost:hover{
+      background:rgba(30,64,175,.7);
+      color:#e5e7eb;
+    }
+    .btn-danger{
+      background:rgba(127,29,29,.9);
+      color:#fecaca;
+      border:1px solid rgba(248,113,113,.8);
+    }
+    .btn-sm{
+      height:26px;
+      padding:0 10px;
+      font-size:10px;
+    }
+
+    .badge{
+      font-size:10px;
+      padding:2px 7px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.6);
+      color:var(--muted);
+    }
+
+    .pill-radio-group{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .pill-radio{
+      font-size:10px;
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid rgba(51,65,85,.9);
+      color:var(--muted);
+      cursor:pointer;
+      user-select:none;
+    }
+    .pill-radio.active{
+      border-color:#38bdf8;
+      background:rgba(56,189,248,.12);
+      color:#e0f2fe;
+    }
+
+    .template-list{
+      border-radius:10px;
+      border:1px solid rgba(30,64,175,.7);
+      padding:8px;
+      max-height:220px;
+      overflow:auto;
+      background:radial-gradient(circle at top,#020617 0,#020617 60%,#020617 100%);
+    }
+    .template-item{
+      border-radius:8px;
+      border:1px solid rgba(30,64,175,.8);
+      padding:8px;
+      margin-bottom:6px;
+      background:rgba(15,23,42,.9);
+      font-size:11px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .template-item:last-child{margin-bottom:0;}
+    .template-title{
+      font-size:11px;
+      font-weight:600;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:6px;
+    }
+    .template-meta{
+      font-size:10px;
+      color:var(--muted);
+    }
+    .template-body{
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
+    .folder-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+      gap:10px;
+      margin-top:8px;
+      max-height:260px;
+      overflow:auto;
+    }
+    .folder-card{
+      border-radius:12px;
+      border:1px solid rgba(30,64,175,.8);
+      padding:10px;
+      background:radial-gradient(circle at top,#020617 0,#020617 60%,#020617 100%);
+      cursor:pointer;
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      font-size:11px;
+    }
+    .folder-card:hover{
+      border-color:#38bdf8;
+      box-shadow:0 10px 26px rgba(15,23,42,.8);
+    }
+    .folder-name{
+      font-weight:600;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .folder-name span.icon{
+      font-size:15px;
+    }
+    .folder-url{
+      font-size:10px;
+      color:var(--muted);
+      word-break:break-all;
+    }
+    .folder-delete{
+      position:absolute;
+      top:6px;
+      right:6px;
+    }
+
+    .csv-preview{
+      border-radius:10px;
+      border:1px solid rgba(30,64,175,.8);
+      max-height:260px;
+      overflow:auto;
+      margin-top:8px;
+      background:#020617;
+    }
+    .csv-preview table{
+      border-collapse:collapse;
+      width:100%;
+      font-size:11px;
+    }
+    .csv-preview th, .csv-preview td{
+      border:1px solid rgba(30,64,175,.6);
+      padding:4px 6px;
+      text-align:left;
+      white-space:nowrap;
+    }
+    .csv-preview th{
+      background:rgba(15,23,42,.9);
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+
+    .help-text{
+      font-size:10px;
+      color:var(--muted);
+    }
+
+    .hidden{display:none!important;}
+
+    @media (max-width:900px){
+      header{flex-direction:column;align-items:flex-start;}
+      .layout{grid-template-columns:1fr;}
+      .split{grid-template-columns:1fr;}
+      .tab-group{align-self:flex-end;}
+    }
+  </style>
 </head>
 <body>
-  <div class="wrap">
-    <header class="brand">
-  <!-- PNG 대신 한 파일 내장 가능한 SVG 로고 -->
-  <svg class="logo" viewBox="0 0 173 60" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TITAN CLASS">
-    <!-- 빨간 웨지 -->
-    <polygon points="10,10 26,10 20,20 34,20 18,50 10,50 23,28 10,28" fill="#e53935"/>
-    <!-- TITAN -->
-    <text x="45" y="30" font-size="26" font-weight="800" fill="#111827" font-family="Inter,Segoe UI,Arial,Helvetica,sans-serif">TITAN</text>
-    <!-- CLASS -->
-    <text x="45" y="48" font-size="14" font-weight="700" letter-spacing="6" fill="#111827" font-family="Inter,Segoe UI,Arial,Helvetica,sans-serif">CLASS</text>
-  </svg>
-</header>
-    <header class="brand"><img class="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAA8CAYAAADv5dHcAAAACXBIWXMAAAsSAAALEgHS3X78AAABV0lEQVR4nO3RMQEAIAwEsZJ/0y0l1yR2I2cYgR8n3Zp1gkB5cjg3oV8mWQv1Pj3k2m7vNwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8J4d8c8lX2l6cQq2c1N0n9iM3l1s0bWbqkS4KX2Yg8eV0o4s4v66v2D2f7lY4pQGd0H1a2U9q7J8Hqf4k3p5m0gkQx6bQqk0m5p8Ww4kD2k8Y3t7w2m5gQqk4k5p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4r8tq7fW83qQyTz2m5kQak4k5p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4p8m41kQ2k8k4r8v0Aj5vJ1y0r7oQAAAABJRU5ErkJggg==" alt="TITAN CLASS" onerror="this.style.display='none'"/></header>
-    <h1>타이탄클래스 카카오톡 입장자 체크봇 <span class="hint">· Strict(채팅은 이름+4자리, 로스터는 오른쪽 4자리)</span></h1>
-    <div class="sub">
-      카톡 대화 <span class="hint">.txt</span>와 <b>로스터</b>(한 줄에 전화번호/설명/이름 등 아무 문자열) 넣고 <b>실행</b>을 누르세요.<br/>
-      로스터는 각 줄의 <b>오른쪽 숫자 덩어리의 마지막 4자리</b>를 추출해 기준값으로 사용합니다. (예: <span class="mono">010-1234-5678 → 5678</span>)<br/>
-      채팅은 <b>이름 + 4자리</b>가 있는 닉네임만 입장 후보로 인정합니다. (예: <span class="mono">권지혁/5678</span>, <span class="mono">권지혁 5678</span>, <span class="mono">권지혁5678</span>)
-    </div>
-
-    <div class="card grid cols-3">
-      <div>
-        <label>1) 카카오톡 대화 <span class="hint">.txt</span></label>
-        <input id="chatFile" type="file" accept=".txt" />
-        <div class="hint">형식: “… <em>이름/4자리</em>님이 입장하셨습니다.” 등</div>
+  <div class="app-shell">
+    <header>
+      <div class="brand">
+        <div class="brand-logo"></div>
+        <div>
+          <div class="brand-text-title">클래스어라운드 운영봇</div>
+          <div class="brand-text-sub">카톡 입장자 · 챗봇 데이터 · 세일즈 멘트 · 드라이브 · 결제자 CSV</div>
+        </div>
       </div>
-      <div>
-        <label>2) 로스터 <span class="hint">.txt</span> (한 줄에 하나)</label>
-        <input id="rosterFile" type="file" accept=".txt" />
-        <div class="hint">또는 오른쪽 칸에 직접 붙여넣기</div>
+      <div class="tab-group" id="tabGroup">
+        <button class="tab-button active" data-tab="tab-kakao">
+          <span class="icon">💬</span>카톡 입장자
+        </button>
+        <button class="tab-button" data-tab="tab-chatbot">
+          <span class="icon">📊</span>챗봇 데이터
+        </button>
+        <button class="tab-button" data-tab="tab-sales">
+          <span class="icon">🧠</span>세일즈 멘트 GPTs
+        </button>
+        <button class="tab-button" data-tab="tab-drive">
+          <span class="icon">📁</span>드라이브 링크
+        </button>
+        <button class="tab-button" data-tab="tab-csv">
+          <span class="icon">💳</span>결제자 CSV
+        </button>
       </div>
-      <div>
-        <label>로스터 직접 입력(선택)</label>
-        <textarea id="rosterText" placeholder="예)&#10;홍길동 010-1234-5678&#10;이순신 010-0000-5678&#10;메모만 있는 줄도 가능(4자리 없으면 예외)"></textarea>
+    </header>
+
+    <!-- ========= TAB 1: 카톡 입장자 ========= -->
+    <section id="tab-kakao" class="layout">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            카카오톡 입장자 체크
+            <span class="card-title-pill">LOG · STATUS</span>
+          </div>
+          <span class="pill-status">READY</span>
+        </div>
+        <div class="card-sub">
+          왼쪽은 프로그램 실행 로그 / 오른쪽은 설정 패널로 구성한 기본 구조야.  
+          실제 로컬 실행 프로그램과 연동되는 부분(폴더 감시, 로그 입력 등)은
+          기존 코드에서 이 영역에 맞춰 붙이면 된다.
+        </div>
+        <div class="split">
+          <div class="log-panel" id="kakaoLogPanel">
+            <div class="log-header">
+              <span>실행 로그</span>
+              <button class="btn btn-ghost btn-sm" type="button" id="btnClearKakaoLog">로그 초기화</button>
+            </div>
+            <div class="log-body" id="kakaoLogBody">
+              <div class="log-line">[INFO] 카카오 입장자 체크 모듈 대기 중...</div>
+            </div>
+          </div>
+          <div>
+            <div class="field-group">
+              <div class="field-label">
+                <span>카톡 대화 폴더 선택 (PC톡 txt / csv 저장 위치)</span>
+              </div>
+              <div class="row">
+                <input class="input" id="kakaoFolderPath" placeholder="예: C:\Users\YOU\Documents\KakaoTalk Chats" />
+                <button class="btn btn-ghost btn-sm" type="button" id="btnMockFolderPick">폴더 선택 (메모용)</button>
+              </div>
+              <div class="help-text">
+                웹에서는 실제 폴더 접근이 안 되니, 이 값은 <strong>메모/설정용</strong>으로만 저장해둔다고 생각하면 돼.  
+                실제 폴더 감시는 로컬 프로그램 코드에서 처리하고, 여긴 UI 정리/기록 용도.
+              </div>
+            </div>
+
+            <div class="field-group">
+              <div class="field-label">
+                <span>카톡방 이름 / ID 메모</span>
+                <span class="right help-text">쉼표(,)로 여러 개 입력 가능</span>
+              </div>
+              <input class="input" id="kakaoRoomsInput" placeholder="예: 시니어쇼츠 1번방, 시니어쇼츠 2번방" />
+            </div>
+
+            <div class="field-group">
+              <div class="field-label">
+                <span>실행 컨트롤</span>
+              </div>
+              <div class="row wrap">
+                <button class="btn btn-primary" type="button" id="btnKakaoStart">
+                  ▶ 실행 (모의)
+                </button>
+                <button class="btn btn-danger" type="button" id="btnKakaoStop">
+                  ⏹ 정지 (모의)
+                </button>
+                <button class="btn btn-ghost" type="button" id="btnKakaoLogSample">
+                  💡 샘플 로그 추가
+                </button>
+              </div>
+              <div class="help-text">
+                실질적인 시작/정지 로직은 로컬 실행 프로그램 안에서 처리하고,  
+                이 버튼들은 단순히 <strong>상태 표시 + 로그 기록</strong> 용도로 사용할 수 있어.
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="card">
-      <div class="row">
-        <button id="runBtn" class="btn acc">실행</button>
-        <button id="demoBtn" class="btn">데모로 테스트</button>
-        <span id="pills" class="row"></span>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            카톡 입장자 설정 저장
+            <span class="card-title-pill">LOCAL STORAGE</span>
+          </div>
+        </div>
+        <div class="card-sub">
+          자주 쓰는 폴더 경로 / 방 정보 등을 브라우저(localStorage)에 저장해두고  
+          운영할 때마다 재사용할 수 있게 하는 설정 영역.
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">
+            <span>설정 프로필 이름</span>
+            <span class="right help-text">예: 시니어쇼츠 3기 입장자 체크</span>
+          </div>
+          <input class="input" id="kakaoProfileName" placeholder="프로필 이름을 입력하세요" />
+        </div>
+        <div class="row wrap">
+          <button class="btn btn-primary btn-sm" type="button" id="btnKakaoSaveProfile">
+            💾 현재 설정 저장
+          </button>
+          <button class="btn btn-ghost btn-sm" type="button" id="btnKakaoLoadLastProfile">
+            ⏪ 마지막 설정 불러오기
+          </button>
+          <span class="help-text">브라우저 단위로 저장되므로, 같은 PC/브라우저에서만 유지됨.</span>
+        </div>
       </div>
-      <div id="err" class="err" style="margin-top:8px"></div>
-      <div class="hint" style="margin-top:8px">채팅 인식: <b>이름/4자리</b>, <b>이름 4자리</b>, <b>이름4자리</b> (이름 없이 4자리만 있으면 <b>예외</b>).</div>
-    </div>
+    </section>
 
-    <div id="results" class="grid" style="gap:16px"></div>
+    <!-- ========= TAB 2: 챗봇 데이터 ========= -->
+    <section id="tab-chatbot" class="layout-single hidden">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            메신저봇R · 챗봇 데이터 패널
+            <span class="card-title-pill">OVERVIEW</span>
+          </div>
+        </div>
+        <div class="card-sub">
+          메신저봇R DB 페이지, 통계 시트, 로그 시트 등 <strong>챗봇 관련 링크를 한 곳에 모아두는 허브</strong>야.  
+          아래에 링크를 추가해두고, 필요한 페이지를 바로 열 수 있어.
+        </div>
 
-    <div class="footer">TitanClass Strict · 모든 처리는 브라우저 내부에서만 수행됩니다.</div>
+        <div class="field-group">
+          <div class="field-label">
+            <span>챗봇 관련 링크 추가</span>
+            <span class="right help-text">예: 메신저봇R DB 대시보드, 명령어 정의 시트 등</span>
+          </div>
+          <input class="input" id="chatbotLinkName" placeholder="이름 (예: 메신저봇R DB 대시보드)" />
+          <input class="input" id="chatbotLinkUrl" placeholder="URL (https:// 로 시작)" />
+          <div class="row wrap">
+            <button class="btn btn-primary btn-sm" type="button" id="btnChatbotAddLink">➕ 링크 추가</button>
+            <span class="help-text">브라우저(localStorage)에만 저장되므로, 공용PC에서는 사용 시 주의.</span>
+          </div>
+        </div>
+
+        <div class="template-list" id="chatbotLinkList">
+          <!-- 동적 채움 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========= TAB 3: 세일즈 멘트 GPTs ========= -->
+    <section id="tab-sales" class="layout-single hidden">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            세일즈 멘트 생성 · 저장
+            <span class="card-title-pill">GPTs API</span>
+          </div>
+          <span class="badge">OpenAI API 사용 (브라우저에서 직접 호출)</span>
+        </div>
+        <div class="card-sub">
+          <strong>API 키를 직접 입력</strong>해서, 시니어쇼츠 / 쇼핑쇼츠 / 각종 강의용 <strong>세일즈 멘트</strong>를  
+          생성하고, 바로 아래 리스트에 템플릿으로 저장해두는 구조야.
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">
+            <span>OpenAI API Key</span>
+            <span class="right help-text">공용PC에서는 입력하지 말 것</span>
+          </div>
+          <div class="row">
+            <input class="input" id="openaiApiKey" type="password" placeholder="sk-로 시작하는 키를 입력" />
+            <button class="btn btn-ghost btn-sm" type="button" id="btnToggleApiKey">보기</button>
+          </div>
+          <div class="help-text">
+            키는 브라우저 localStorage에 <strong>선택적으로</strong> 저장할 수 있게 해둘까 했지만,  
+            안전을 위해 <strong>기본은 세션(리로드 시 사라짐)</strong>으로만 사용하도록 설계해놨어.
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">
+            <span>기본 프롬프트(시스템 메시지)</span>
+            <span class="right help-text">너가 이미 구축한 세일즈 템플릿 요약본을 넣어도 됨</span>
+          </div>
+          <textarea class="textarea" id="salesSystemPrompt" placeholder="예: 당신은 클래스어라운드 세일즈 멘트 전문가입니다..."></textarea>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">
+            <span>요청 내용 (이번에 만들 멘트 상황 설명)</span>
+            <span class="right help-text">타깃 / 무료 or 본강 / 후킹 포인트 등</span>
+          </div>
+          <textarea class="textarea" id="salesUserPrompt" placeholder="예) 40~50대 워킹맘 대상, 시니어쇼츠 무료강의 입장 유도 멘트 5개..."></textarea>
+        </div>
+
+        <div class="row wrap">
+          <button class="btn btn-primary" type="button" id="btnGenerateSales">
+            🧠 세일즈 멘트 생성
+          </button>
+          <span class="help-text" id="salesStatusText">대기 중...</span>
+        </div>
+
+        <div class="field-group" style="margin-top:12px;">
+          <div class="field-label">
+            <span>생성 결과</span>
+          </div>
+          <textarea class="textarea" id="salesResult" placeholder="여기에 GPT 결과가 표시됩니다." readonly></textarea>
+        </div>
+
+        <div class="row wrap">
+          <input class="input" id="salesTemplateTitle" placeholder="이 결과를 저장할 이름 (예: 4050 시니어쇼츠 무료강의 오프닝)" />
+          <button class="btn btn-primary btn-sm" type="button" id="btnSaveSalesTemplate">💾 템플릿으로 저장</button>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">
+            <span>저장된 세일즈 멘트 템플릿</span>
+          </div>
+          <div class="template-list" id="salesTemplateList">
+            <!-- 세일즈 템플릿 저장 리스트 -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========= TAB 4: 드라이브 폴더 링크 ========= -->
+    <section id="tab-drive" class="layout-single hidden">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            Google Drive 폴더 링크 모음
+            <span class="card-title-pill">FOLDER SHORTCUTS</span>
+          </div>
+        </div>
+        <div class="card-sub">
+          자주 사용하는 <strong>공유 드라이브 / 강의별 자료 폴더 / 디자인 에셋 폴더</strong> 링크를  
+          한 번에 관리하는 공간이야.  
+          입력 → 저장하면 <strong>폴더 아이콘 카드</strong>로 나타나고, 클릭 시 새 탭으로 바로 이동.
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">
+            <span>폴더 이름</span>
+            <span class="right help-text">예: 시니어쇼츠 썸네일 원본 폴더</span>
+          </div>
+          <input class="input" id="driveFolderName" placeholder="폴더 이름" />
+        </div>
+        <div class="field-group">
+          <div class="field-label">
+            <span>폴더 링크(URL)</span>
+            <span class="right help-text">Google Drive 공유 URL 그대로 복붙</span>
+          </div>
+          <input class="input" id="driveFolderUrl" placeholder="https://drive.google.com/..." />
+        </div>
+        <div class="row wrap">
+          <button class="btn btn-primary btn-sm" type="button" id="btnAddDriveFolder">
+            📁 폴더 추가
+          </button>
+          <button class="btn btn-ghost btn-sm" type="button" id="btnClearDriveFolders">
+            🗑 전체 삭제
+          </button>
+          <span class="help-text">브라우저 localStorage에 저장. 노트북/브라우저 바뀌면 다시 등록 필요.</span>
+        </div>
+
+        <div class="folder-grid" id="driveFolderGrid">
+          <!-- 동적 폴더 카드 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========= TAB 5: 결제자 CSV 정리 ========= -->
+    <section id="tab-csv" class="layout-single hidden">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            결제자 CSV → 정리 · 업로드
+            <span class="card-title-pill">CSV PIPELINE</span>
+          </div>
+        </div>
+        <div class="card-sub">
+          관리자 페이지에서 다운받은 <strong>결제 내역 CSV</strong>를 업로드해서  
+          브라우저에서 먼저 구조를 확인하고,  
+          필요하면 정리본을 다시 CSV로 다운로드하거나, Apps Script 웹앱으로 전송하는 구간이야.
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">
+            <span>CSV 파일 업로드</span>
+            <span class="right help-text">UTF-8 CSV 권장</span>
+          </div>
+          <input class="input" id="csvFileInput" type="file" accept=".csv,text/csv" />
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">
+            <span>Apps Script WebApp URL (선택)</span>
+            <span class="right help-text">시트에 바로 넣고 싶을 때만 사용</span>
+          </div>
+          <input class="input" id="csvWebAppUrl" placeholder="https://script.google.com/macros/s/..." />
+          <div class="help-text">
+            여기에 URL을 넣고 <strong>“시트로 전송”</strong> 버튼을 누르면,  
+            현재 파싱된 CSV 데이터를 JSON으로 보내도록 설계되어 있어.  
+            실제 처리 로직은 Apps Script에서 받는 형식에 맞게 구현해주면 된다.
+          </div>
+        </div>
+
+        <div class="row wrap">
+          <button class="btn btn-primary btn-sm" type="button" id="btnDownloadCsvClean">
+            💾 정리본 CSV 다운로드
+          </button>
+          <button class="btn btn-ghost btn-sm" type="button" id="btnSendCsvToWebApp">
+            📤 시트로 전송 (WebApp)
+          </button>
+          <span class="help-text" id="csvStatusText">CSV 미로딩</span>
+        </div>
+
+        <div class="csv-preview" id="csvPreviewContainer" style="display:none;">
+          <table id="csvPreviewTable"></table>
+        </div>
+      </div>
+    </section>
   </div>
 
-<script>
-// ===== 정규식 =====
-const JOIN_PAT = /(.*?)님이\s*(입장하셨습니다|들어왔습니다|입장했습니다|들어오셨습니다)\./;
-const LEAVE_PAT = /(.*?)님이\s*(퇴장하셨습니다|나갔습니다|퇴장했습니다|나가셨습니다)\./;
+  <script>
+    // ========= 공통 탭 전환 =========
+    const tabButtons = document.querySelectorAll(".tab-button");
+    const tabs = document.querySelectorAll("section[id^='tab-']");
 
-// ===== 유틸 =====
-const $ = (id)=>document.getElementById(id);
-function setError(msg){ document.getElementById('err').textContent = msg||""; }
-function setPills({joined,left,exceptions,rosterExceptions}){
-  const el=document.getElementById('pills'); el.innerHTML='';
-  const pill=(txt,cls)=>{const s=document.createElement('span'); s.className='pill '+cls; s.textContent=txt; return s;};
-  el.appendChild(pill(`입장 ${joined}`,'ok'));
-  el.appendChild(pill(`퇴장 ${left}`,'bad'));
-  el.appendChild(pill(`예외(채팅) ${exceptions}`,'warn'));
-  el.appendChild(pill(`예외(명단) ${rosterExceptions}`,'warn'));
-}
-function csvEscape(v){ if(v==null)v=""; const s=String(v); if(/[",\n]/.test(s)) return '"'+s.replace(/"/g,'""')+'"'; return s; }
-function toCSV(rows){ return rows.map(r=> r.map(csvEscape).join(",")).join("\r\n"); }
-function downloadCSV(name, rows){ const blob=new Blob(["\ufeff"+toCSV(rows)],{type:"text/csv;charset=utf-8;"}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(url),500); }
-async function readText(file){ return await file.text(); }
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.tab;
+        tabButtons.forEach(b => b.classList.toggle("active", b === btn));
+        tabs.forEach(tab => {
+          tab.classList.toggle("hidden", tab.id !== target);
+        });
+      });
+    });
 
-// 로스터 한 줄에서 "오른쪽 숫자 덩어리"의 마지막 4자리
-function extractRosterLast4(line){
-  const nums = String(line).match(/\d+/g);
-  if(!nums || !nums.length) return null;
-  const rightMost = nums[nums.length-1];
-  if(rightMost.length < 4) return null;
-  return rightMost.slice(-4);
-}
+    // ========= 간단 로깅 유틸 =========
+    function appendLog(containerId, message){
+      const body = document.getElementById(containerId);
+      if(!body) return;
+      const line = document.createElement("div");
+      line.className = "log-line";
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2,"0");
+      const mm = String(now.getMinutes()).padStart(2,"0");
+      const ss = String(now.getSeconds()).padStart(2,"0");
+      line.textContent = `[${hh}:${mm}:${ss}] ${message}`;
+      body.appendChild(line);
+      body.scrollTop = body.scrollHeight;
+    }
 
-// 채팅 닉네임에서 "이름 + 4자리"만 허용 (슬래시/하이픈/공백/무구분 허용)
-function parseNickNameDigits_STRICT(nick){
-  const m = String(nick).trim().match(/^\s*([A-Za-z0-9가-힣·\s]+?)\s*(?:[\/-]?\s*)?(\d{4})\s*$/);
-  if(!m) return null; const name=(m[1]||'').trim(); if(!name) return null; return {name, digits:m[2]};
-}
+    // ========= TAB1: 카톡 입장자 =========
+    (function initKakao(){
+      const logBody = document.getElementById("kakaoLogBody");
+      const btnClearLog = document.getElementById("btnClearKakaoLog");
+      const btnStart = document.getElementById("btnKakaoStart");
+      const btnStop = document.getElementById("btnKakaoStop");
+      const btnSample = document.getElementById("btnKakaoLogSample");
+      const btnMockFolder = document.getElementById("btnMockFolderPick");
+      const folderInput = document.getElementById("kakaoFolderPath");
+      const roomsInput = document.getElementById("kakaoRoomsInput");
+      const profileNameInput = document.getElementById("kakaoProfileName");
+      const btnSaveProfile = document.getElementById("btnKakaoSaveProfile");
+      const btnLoadLast = document.getElementById("btnKakaoLoadLastProfile");
 
-function parseChat_STRICT(text){
-  const lines=text.split(/\r?\n/), joined=[], left=[];
-  for(const raw of lines){ const line=raw.trim(); if(!line) continue;
-    let m=line.match(JOIN_PAT); if(m){ joined.push(m[1].trim()); continue; }
-    m=line.match(LEAVE_PAT); if(m){ left.push(m[1].trim()); continue; } }
-  const digitsMap=new Map(), exceptions=[], rawJoinedNick=[];
-  for(const nick of joined){ rawJoinedNick.push(nick); const s=parseNickNameDigits_STRICT(nick);
-    if(!s){ exceptions.push(nick); continue; }
-    const ex=`${s.name}/${s.digits}`; if(!digitsMap.has(s.digits)) digitsMap.set(s.digits,new Set()); digitsMap.get(s.digits).add(ex); }
-  return {digitsMap,leftCount:left.length,joinCount:joined.length,exceptions,rawJoinedNick};
-}
+      btnClearLog.addEventListener("click", () => {
+        logBody.innerHTML = "";
+        appendLog("kakaoLogBody","로그를 초기화했습니다.");
+      });
 
-function showTable(title, headers, rows, downloads){
-  const wrap=document.createElement('div'); wrap.className='card';
-  const top=document.createElement('div'); top.className='row';
-  const h=document.createElement('h3'); h.textContent=title; h.style.margin='0 8px 0 0'; top.appendChild(h);
-  (downloads||[]).forEach(d=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=d.label; b.onclick=d.onClick; top.appendChild(b); });
-  wrap.appendChild(top);
-  const table=document.createElement('table'); const thead=document.createElement('thead'); const trh=document.createElement('tr');
-  headers.forEach(x=>{ const th=document.createElement('th'); th.textContent=x; trh.appendChild(th); }); thead.appendChild(trh); table.appendChild(thead);
-  const tbody=document.createElement('tbody');
-  rows.forEach(r=>{ const tr=document.createElement('tr'); r.forEach(c=>{ const td=document.createElement('td'); td.textContent = (c==null?'':String(c)); tr.appendChild(td); }); tbody.appendChild(tr); });
-  table.appendChild(tbody); wrap.appendChild(table);
-  document.getElementById("results").appendChild(wrap);
-}
+      btnStart.addEventListener("click", () => {
+        appendLog("kakaoLogBody","카톡 입장자 체크 모듈 실행 (UI 상 모의 동작).");
+      });
 
-function processAndRender({chatText, rosterText}){
-  // 1) 채팅 파싱(STRICT) → digitsMap
-  const {digitsMap, leftCount, joinCount, exceptions, rawJoinedNick} = parseChat_STRICT(chatText);
+      btnStop.addEventListener("click", () => {
+        appendLog("kakaoLogBody","카톡 입장자 체크 모듈 정지 (UI 상 모의 동작).");
+      });
 
-  // 2) 로스터 파싱 → 각 줄의 마지막 4자리
-  const rosterLines = rosterText.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-  const rosterRows = []; // [name_or_roster, last4, status, matched_examples, notes]
-  const rosterExceptions = [];
-  const by4 = new Map(); // last4 -> indices in rosterRows
-  rosterLines.forEach(line => {
-    const d = extractRosterLast4(line);
-    if(!d){ rosterExceptions.push(line); rosterRows.push([line,'','예외(4자리 없음)','', '']); return; }
-    const idx = rosterRows.push([line, d, '', '', '']) - 1;
-    if(!by4.has(d)) by4.set(d, []);
-    by4.get(d).push(idx);
-  });
+      btnSample.addEventListener("click", () => {
+        appendLog("kakaoLogBody","[DEBUG] 방 '시니어쇼츠 1번방' 신규 입장자 3명 감지 (예시).");
+      });
 
-  // 3) 매칭 로직 (last4 기준)
-  for(const [d, idxList] of by4.entries()){
-    const examples = digitsMap.get(d) ? Array.from(digitsMap.get(d)).sort() : [];
-    const inChat = examples.length > 0;
-    if(idxList.length === 1){
-      const idx = idxList[0];
-      if(inChat){
-        rosterRows[idx][2] = '입장';
-        rosterRows[idx][3] = examples.join('; ');
-        // 동일 4자리 → 채팅 이름을 표의 첫 열에 표시
-        const names = Array.from(new Set(examples.map(ex => ex.split('/')[0].trim()).filter(Boolean)));
-        if(names.length === 1){
-          rosterRows[idx][0] = names[0];
-        }else if(names.length > 1){
-          rosterRows[idx][0] = names.join('; ');
-          rosterRows[idx][4] = ((rosterRows[idx][4]||'') + ' 다수 이름 매칭됨').trim();
+      btnMockFolder.addEventListener("click", () => {
+        appendLog("kakaoLogBody","폴더 선택은 브라우저에서 직접 접근 불가. 이 입력창은 메모용 경로 필드입니다.");
+      });
+
+      const STORAGE_KEY = "ca_kakao_profile_last";
+      btnSaveProfile.addEventListener("click", () => {
+        const name = profileNameInput.value.trim() || "기본 프로필";
+        const data = {
+          name,
+          folderPath: folderInput.value,
+          rooms: roomsInput.value,
+          savedAt: new Date().toISOString()
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        appendLog("kakaoLogBody",`설정 프로필 '${name}' 저장 완료.`);
+      });
+
+      btnLoadLast.addEventListener("click", () => {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw){
+          appendLog("kakaoLogBody","저장된 설정 프로필이 없습니다.");
+          return;
         }
-      } else {
-        rosterRows[idx][2] = '미입장';
-      }
-    }else{
-      // 같은 4자리가 명단에 여러 줄 → 애매 → 확인 필요
-      idxList.forEach(idx => {
-        if(inChat){
-          rosterRows[idx][2] = '중복 4자리 확인필요';
-          rosterRows[idx][3] = examples.join('; ');
-          rosterRows[idx][4] = '같은 4자리 번호가 명단에 여러 줄 존재(자동 미입장 처리)';
-        }else{
-          rosterRows[idx][2] = '미입장';
+        try{
+          const data = JSON.parse(raw);
+          profileNameInput.value = data.name || "";
+          folderInput.value = data.folderPath || "";
+          roomsInput.value = data.rooms || "";
+          appendLog("kakaoLogBody",`설정 프로필 '${data.name || "이름 없음"}' 불러옴.`);
+        }catch(e){
+          appendLog("kakaoLogBody","설정 프로필 파싱 오류. localStorage를 한번 지우는 것을 권장.");
         }
       });
-    }
-  }
 
-  // 3.5) 상태별 표시 규칙: 미입장/중복은 name 빈칸 처리
-  rosterRows.forEach(r => { if (r[2] === '미입장' || r[2].startsWith('중복 4자리')) r[0] = ''; });
+      // 초기 로드 시 마지막 프로필 자동 반영은 선택적. 필요하면 아래 주석 해제.
+      // btnLoadLast.click();
+    })();
 
-  // 4) 명단 외 입장자 (채팅에는 있는데 명단 4자리에 없는 경우)
-  const rosterLast4Set = new Set(rosterRows.map(r=>r[1]).filter(Boolean));
-  const extra = [];
-  digitsMap.forEach((examples, d)=>{
-    if(!rosterLast4Set.has(d)){
-      Array.from(examples).sort().forEach(ex => extra.push([ex]));
-    }
-  });
+    // ========= TAB2: 챗봇 데이터 링크 관리 =========
+    (function initChatbotLinks(){
+      const nameInput = document.getElementById("chatbotLinkName");
+      const urlInput = document.getElementById("chatbotLinkUrl");
+      const btnAdd = document.getElementById("btnChatbotAddLink");
+      const listContainer = document.getElementById("chatbotLinkList");
+      const STORAGE_KEY = "ca_chatbot_links";
 
-  // 5) 출력
-  document.getElementById("results").innerHTML='';
-  setPills({joined:joinCount,left:leftCount,exceptions:exceptions.length,rosterExceptions:rosterExceptions.length});
-  showTable('내 명단 기준 상태 (titan_attendance_report_strict.csv)', ['name','last4','status','matched_examples','notes'], rosterRows,[{label:'CSV 저장', onClick:()=>downloadCSV('titan_attendance_report_strict.csv', [['name','last4','status','matched_examples','notes'],...rosterRows])}]);
-  showTable('명단 외 입장자 (titan_joined_extra_strict.csv)', ['joined_example(name/last4)'], extra,[{label:'CSV 저장', onClick:()=>downloadCSV('titan_joined_extra_strict.csv', [['joined_example(name/last4)'],...extra])}]);
-  if(rosterExceptions.length) showTable('예외(명단에 4자리 없음) (titan_roster_exceptions_strict.csv)', ['roster_line'], rosterExceptions.map(s=>[s]),[{label:'CSV 저장', onClick:()=>downloadCSV('titan_roster_exceptions_strict.csv', [['roster_line'], ...rosterExceptions.map(s=>[s])])}]);
-  if(exceptions.length) showTable('예외(채팅: 이름+4자리 아님) (titan_chat_exceptions_strict.csv)', ['raw_nick'], exceptions.map(s=>[s]),[{label:'CSV 저장', onClick:()=>downloadCSV('titan_chat_exceptions_strict.csv', [['raw_nick'], ...exceptions.map(s=>[s])])}]);
-  showTable('원시 입장 로그 (titan_raw_joins_strict.csv)', ['joined_nickname'], rawJoinedNick.map(s=>[s]),[{label:'CSV 저장', onClick:()=>downloadCSV('titan_raw_joins_strict.csv', [['joined_nickname'], ...rawJoinedNick.map(s=>[s])])}]);
-}
+      function load(){
+        listContainer.innerHTML = "";
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw){
+          listContainer.innerHTML = '<div class="help-text">등록된 링크가 없습니다.</div>';
+          return;
+        }
+        let links;
+        try{
+          links = JSON.parse(raw) || [];
+        }catch(e){
+          listContainer.innerHTML = '<div class="help-text">링크 데이터를 불러오는 중 오류가 발생했습니다.</div>';
+          return;
+        }
+        if(!links.length){
+          listContainer.innerHTML = '<div class="help-text">등록된 링크가 없습니다.</div>';
+          return;
+        }
+        links.forEach((item, idx) => {
+          const div = document.createElement("div");
+          div.className = "template-item";
+          const title = document.createElement("div");
+          title.className = "template-title";
+          const left = document.createElement("div");
+          left.textContent = item.name || "(이름 없음)";
+          const right = document.createElement("div");
+          const openBtn = document.createElement("button");
+          openBtn.className = "btn btn-primary btn-sm";
+          openBtn.type = "button";
+          openBtn.textContent = "열기";
+          openBtn.addEventListener("click", () => {
+            if(item.url) window.open(item.url,"_blank");
+          });
+          const delBtn = document.createElement("button");
+          delBtn.className = "btn btn-ghost btn-sm";
+          delBtn.type = "button";
+          delBtn.textContent = "삭제";
+          delBtn.addEventListener("click", () => {
+            links.splice(idx,1);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+            load();
+          });
+          right.appendChild(openBtn);
+          right.appendChild(delBtn);
+          title.appendChild(left);
+          title.appendChild(right);
 
-async function runMain(){
-  try{
-    setError('');
-    const chatFile=document.getElementById('chatFile').files[0];
-    const rosterFile=document.getElementById('rosterFile').files[0];
-    const rosterTextRaw=document.getElementById('rosterText').value.trim();
-    if(!chatFile) { setError('대화 txt 파일을 선택하세요.'); return; }
-    const chatText=await readText(chatFile);
-    let rosterText='';
-    if(rosterTextRaw){ rosterText=rosterTextRaw; }
-    else if(rosterFile){ rosterText=await readText(rosterFile); }
-    else { setError('명단 파일을 업로드하거나 텍스트로 입력하세요.'); return; }
-    processAndRender({chatText, rosterText});
-  }catch(err){ setError('오류: '+ err.message); console.error(err); }
-}
+          const meta = document.createElement("div");
+          meta.className = "template-meta";
+          meta.textContent = item.url || "";
 
-function runDemo(){
-  setError('');
-  const rosterText=[
-    '정은희 010-1111-2508',
-    '김하윤 010-2222-4064',
-    '심세진 010-3333-3315',
-    '걸민 010-4444-4850',
-    '이송이 010-5555-5410',
-    '중복 예시 A 010-0000-7772',
-    '중복 예시 B 010-9999-7772',
-    '메모만 있고 4자리 없음'
-  ].join('\n');
-  const chatText=[
-    '2025.08.10 오후 8:01 - 정은희/2508님이 입장하셨습니다.',
-    '2025.08.10 오후 8:02 - 김하윤 4064님이 들어왔습니다.',
-    '2025.08.10 오후 8:03 - 심세진/3315님이 입장하셨습니다.',
-    '2025.08.10 오후 8:04 - 걸민 4850님이 입장하셨습니다.',
-    '2025.08.10 오후 8:05 - 홍길동7772님이 입장하셨습니다.',
-    '2025.08.10 오후 8:06 - 7772님이 입장하셨습니다.',
-    '2025.08.10 오후 8:07 - 민수님이 입장하셨습니다.'
-  ].join('\n');
-  processAndRender({chatText, rosterText});
-}
+          div.appendChild(title);
+          div.appendChild(meta);
+          listContainer.appendChild(div);
+        });
+      }
 
-// DOM 로드 후 바인딩
-window.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('runBtn').addEventListener('click', runMain);
-  document.getElementById('demoBtn').addEventListener('click', runDemo);
-});
-</script>
+      btnAdd.addEventListener("click", () => {
+        const name = nameInput.value.trim();
+        const url = urlInput.value.trim();
+        if(!name || !url){
+          alert("이름과 URL을 모두 입력해주세요.");
+          return;
+        }
+        let links = [];
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(raw){
+          try{links = JSON.parse(raw) || [];}catch(e){}
+        }
+        links.push({
+          name,
+          url,
+          createdAt: new Date().toISOString()
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+        nameInput.value = "";
+        urlInput.value = "";
+        load();
+      });
+
+      load();
+    })();
+
+    // ========= TAB3: 세일즈 멘트 GPTs =========
+    (function initSalesGPT(){
+      const apiKeyInput = document.getElementById("openaiApiKey");
+      const btnToggleKey = document.getElementById("btnToggleApiKey");
+      const systemPromptInput = document.getElementById("salesSystemPrompt");
+      const userPromptInput = document.getElementById("salesUserPrompt");
+      const btnGenerate = document.getElementById("btnGenerateSales");
+      const statusText = document.getElementById("salesStatusText");
+      const resultArea = document.getElementById("salesResult");
+      const templateTitleInput = document.getElementById("salesTemplateTitle");
+      const btnSaveTemplate = document.getElementById("btnSaveSalesTemplate");
+      const templateList = document.getElementById("salesTemplateList");
+      const STORAGE_KEY = "ca_sales_templates";
+
+      btnToggleKey.addEventListener("click", () => {
+        const type = apiKeyInput.getAttribute("type");
+        apiKeyInput.setAttribute("type", type === "password" ? "text" : "password");
+        btnToggleKey.textContent = type === "password" ? "숨기기" : "보기";
+      });
+
+      async function callOpenAI(apiKey, systemPrompt, userPrompt){
+        const endpoint = "https://api.openai.com/v1/chat/completions";
+        const body = {
+          model: "gpt-4.1-mini",
+          messages:[
+            { role:"system", content: systemPrompt || "You are a helpful assistant." },
+            { role:"user", content: userPrompt }
+          ],
+          temperature:0.7
+        };
+        const res = await fetch(endpoint, {
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json",
+            "Authorization":"Bearer " + apiKey
+          },
+          body:JSON.stringify(body)
+        });
+        if(!res.ok){
+          const text = await res.text();
+          throw new Error("API 오류: " + text);
+        }
+        const data = await res.json();
+        const content = data.choices?.[0]?.message?.content || "";
+        return content;
+      }
+
+      btnGenerate.addEventListener("click", async () => {
+        const key = apiKeyInput.value.trim();
+        const sys = systemPromptInput.value.trim();
+        const usr = userPromptInput.value.trim();
+        if(!key){
+          alert("OpenAI API 키를 입력해주세요.");
+          return;
+        }
+        if(!usr){
+          alert("요청 내용을 입력해주세요.");
+          return;
+        }
+        statusText.textContent = "생성 중...";
+        statusText.style.color = "#e5e7eb";
+        btnGenerate.disabled = true;
+        btnGenerate.textContent = "생성 중...";
+        resultArea.value = "";
+        try{
+          const content = await callOpenAI(key, sys, usr);
+          resultArea.value = content;
+          statusText.textContent = "완료";
+          statusText.style.color = "#22c55e";
+        }catch(e){
+          console.error(e);
+          statusText.textContent = "오류 발생: " + e.message;
+          statusText.style.color = "#ef4444";
+        }finally{
+          btnGenerate.disabled = false;
+          btnGenerate.textContent = "🧠 세일즈 멘트 생성";
+        }
+      });
+
+      function loadTemplates(){
+        templateList.innerHTML = "";
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw){
+          templateList.innerHTML = '<div class="help-text">저장된 템플릿이 없습니다.</div>';
+          return;
+        }
+        let list;
+        try{
+          list = JSON.parse(raw) || [];
+        }catch(e){
+          templateList.innerHTML = '<div class="help-text">템플릿 데이터를 불러오는 중 오류가 발생했습니다.</div>';
+          return;
+        }
+        if(!list.length){
+          templateList.innerHTML = '<div class="help-text">저장된 템플릿이 없습니다.</div>';
+          return;
+        }
+        list.forEach((item, idx) => {
+          const div = document.createElement("div");
+          div.className = "template-item";
+
+          const title = document.createElement("div");
+          title.className = "template-title";
+          const left = document.createElement("div");
+          left.textContent = item.title || "(제목 없음)";
+          const right = document.createElement("div");
+          const copyBtn = document.createElement("button");
+          copyBtn.className = "btn btn-primary btn-sm";
+          copyBtn.type = "button";
+          copyBtn.textContent = "복사";
+          copyBtn.addEventListener("click", () => {
+            navigator.clipboard.writeText(item.content || "").then(() => {
+              alert("클립보드에 복사되었습니다.");
+            }).catch(() => alert("복사에 실패했습니다."));
+          });
+          const delBtn = document.createElement("button");
+          delBtn.className = "btn btn-ghost btn-sm";
+          delBtn.type = "button";
+          delBtn.textContent = "삭제";
+          delBtn.addEventListener("click", () => {
+            list.splice(idx,1);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+            loadTemplates();
+          });
+          right.appendChild(copyBtn);
+          right.appendChild(delBtn);
+          title.appendChild(left);
+          title.appendChild(right);
+
+          const meta = document.createElement("div");
+          meta.className = "template-meta";
+          const date = item.createdAt ? new Date(item.createdAt) : null;
+          meta.textContent = date ? "저장: " + date.toLocaleString() : "";
+
+          const body = document.createElement("div");
+          body.className = "template-body";
+          body.textContent = item.content || "";
+
+          div.appendChild(title);
+          div.appendChild(meta);
+          div.appendChild(body);
+          templateList.appendChild(div);
+        });
+      }
+
+      btnSaveTemplate.addEventListener("click", () => {
+        const title = templateTitleInput.value.trim();
+        const content = resultArea.value.trim();
+        if(!title){
+          alert("템플릿 이름을 입력해주세요.");
+          return;
+        }
+        if(!content){
+          alert("저장할 내용이 없습니다.");
+          return;
+        }
+        let list = [];
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(raw){
+          try{list = JSON.parse(raw) || [];}catch(e){}
+        }
+        list.unshift({
+          title,
+          content,
+          createdAt: new Date().toISOString()
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+        templateTitleInput.value = "";
+        loadTemplates();
+      });
+
+      loadTemplates();
+    })();
+
+    // ========= TAB4: 드라이브 폴더 링크 =========
+    (function initDriveFolders(){
+      const nameInput = document.getElementById("driveFolderName");
+      const urlInput = document.getElementById("driveFolderUrl");
+      const btnAdd = document.getElementById("btnAddDriveFolder");
+      const btnClear = document.getElementById("btnClearDriveFolders");
+      const grid = document.getElementById("driveFolderGrid");
+      const STORAGE_KEY = "ca_drive_folders";
+
+      function load(){
+        grid.innerHTML = "";
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw){
+          grid.innerHTML = '<div class="help-text">등록된 폴더가 없습니다.</div>';
+          return;
+        }
+        let list;
+        try{
+          list = JSON.parse(raw) || [];
+        }catch(e){
+          grid.innerHTML = '<div class="help-text">폴더 데이터를 불러오는 중 오류가 발생했습니다.</div>';
+          return;
+        }
+        if(!list.length){
+          grid.innerHTML = '<div class="help-text">등록된 폴더가 없습니다.</div>';
+          return;
+        }
+        list.forEach((item, idx) => {
+          const card = document.createElement("div");
+          card.className = "folder-card";
+          card.addEventListener("click", (e) => {
+            // 삭제 버튼 클릭은 링크 이동 막기
+            if(e.target.closest(".folder-delete")) return;
+            if(item.url) window.open(item.url,"_blank");
+          });
+
+          const name = document.createElement("div");
+          name.className = "folder-name";
+          const icon = document.createElement("span");
+          icon.className = "icon";
+          icon.textContent = "📁";
+          const text = document.createElement("span");
+          text.textContent = item.name || "(이름 없음)";
+          name.appendChild(icon);
+          name.appendChild(text);
+
+          const url = document.createElement("div");
+          url.className = "folder-url";
+          url.textContent = item.url || "";
+
+          const delBtn = document.createElement("button");
+          delBtn.className = "btn btn-ghost btn-sm folder-delete";
+          delBtn.type = "button";
+          delBtn.textContent = "×";
+          delBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            list.splice(idx,1);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+            load();
+          });
+
+          card.appendChild(name);
+          card.appendChild(url);
+          card.appendChild(delBtn);
+          grid.appendChild(card);
+        });
+      }
+
+      btnAdd.addEventListener("click", () => {
+        const name = nameInput.value.trim();
+        const url = urlInput.value.trim();
+        if(!name || !url){
+          alert("폴더 이름과 링크를 모두 입력해주세요.");
+          return;
+        }
+        let list = [];
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(raw){
+          try{list = JSON.parse(raw) || [];}catch(e){}
+        }
+        list.push({
+          name,
+          url,
+          createdAt: new Date().toISOString()
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+        nameInput.value = "";
+        urlInput.value = "";
+        load();
+      });
+
+      btnClear.addEventListener("click", () => {
+        if(!confirm("등록된 모든 폴더 링크를 삭제할까요?")) return;
+        localStorage.removeItem(STORAGE_KEY);
+        load();
+      });
+
+      load();
+    })();
+
+    // ========= TAB5: 결제자 CSV 정리 =========
+    (function initCsv(){
+      const fileInput = document.getElementById("csvFileInput");
+      const webAppInput = document.getElementById("csvWebAppUrl");
+      const btnDownload = document.getElementById("btnDownloadCsvClean");
+      const btnSend = document.getElementById("btnSendCsvToWebApp");
+      const statusText = document.getElementById("csvStatusText");
+      const previewContainer = document.getElementById("csvPreviewContainer");
+      const previewTable = document.getElementById("csvPreviewTable");
+
+      let parsedCsv = null; // { headers: [], rows: [][] }
+
+      function parseCsv(text){
+        const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
+        if(!lines.length) return { headers: [], rows: [] };
+        const rows = lines.map(line => {
+          // 아주 단순한 CSV 파서 (콤마 기준 분리, 큰따옴표 처리 X)
+          return line.split(",").map(v => v.trim());
+        });
+        const headers = rows[0];
+        const dataRows = rows.slice(1);
+        return { headers, rows:dataRows };
+      }
+
+      function renderPreview(data){
+        const { headers, rows } = data;
+        previewTable.innerHTML = "";
+        if(!headers.length){
+          previewContainer.style.display = "none";
+          return;
+        }
+        const thead = document.createElement("thead");
+        const trHead = document.createElement("tr");
+        headers.forEach(h => {
+          const th = document.createElement("th");
+          th.textContent = h;
+          trHead.appendChild(th);
+        });
+        thead.appendChild(trHead);
+        previewTable.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+        rows.forEach(row => {
+          const tr = document.createElement("tr");
+          headers.forEach((_, idx) => {
+            const td = document.createElement("td");
+            td.textContent = row[idx] || "";
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+        previewTable.appendChild(tbody);
+        previewContainer.style.display = "block";
+      }
+
+      fileInput.addEventListener("change", () => {
+        const file = fileInput.files?.[0];
+        if(!file){
+          statusText.textContent = "CSV 미로딩";
+          parsedCsv = null;
+          previewContainer.style.display = "none";
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try{
+            const text = e.target.result;
+            const data = parseCsv(text);
+            parsedCsv = data;
+            renderPreview(data);
+            statusText.textContent = `불러옴: ${file.name} (행 ${data.rows.length}개)`;
+          }catch(err){
+            console.error(err);
+            statusText.textContent = "CSV 파싱 오류";
+            parsedCsv = null;
+            previewContainer.style.display = "none";
+          }
+        };
+        reader.readAsText(file, "utf-8");
+      });
+
+      btnDownload.addEventListener("click", () => {
+        if(!parsedCsv){
+          alert("먼저 CSV 파일을 업로드해주세요.");
+          return;
+        }
+        const { headers, rows } = parsedCsv;
+        const lines = [];
+        lines.push(headers.join(","));
+        rows.forEach(row => {
+          const line = headers.map((_, idx) => row[idx] || "");
+          lines.push(line.join(","));
+        });
+        const blob = new Blob([lines.join("\n")], { type:"text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "cleaned.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+
+      btnSend.addEventListener("click", async () => {
+        if(!parsedCsv){
+          alert("먼저 CSV 파일을 업로드해주세요.");
+          return;
+        }
+        const url = webAppInput.value.trim();
+        if(!url){
+          alert("Apps Script WebApp URL을 입력해주세요.");
+          return;
+        }
+        statusText.textContent = "WebApp으로 전송 중...";
+        statusText.style.color = "#e5e7eb";
+        try{
+          const payload = {
+            headers: parsedCsv.headers,
+            rows: parsedCsv.rows
+          };
+          const res = await fetch(url, {
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body:JSON.stringify(payload)
+          });
+          if(!res.ok){
+            const text = await res.text();
+            throw new Error(text);
+          }
+          const data = await res.text();
+          statusText.textContent = "전송 완료: " + data;
+          statusText.style.color = "#22c55e";
+        }catch(e){
+          console.error(e);
+          statusText.textContent = "전송 실패: " + e.message;
+          statusText.style.color = "#ef4444";
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
