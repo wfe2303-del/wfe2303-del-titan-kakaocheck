@@ -4,1416 +4,1002 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>클래스어라운드 · 운영봇 대시보드</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     :root{
-      --bg:#020617;
-      --card:#020617;
-      --surface:#020617;
-      --line:#1f2937;
-      --text:#e5e7eb;
-      --muted:#6b7280;
-      --accent:#38bdf8;
-      --accent-soft:#0f172a;
-      --accent-strong:#0ea5e9;
-      --ok:#22c55e;
-      --warn:#f59e0b;
-      --bad:#ef4444;
-      --radius:14px;
-      --gap:14px;
-      --ctl-h:42px;
-      --shadow-soft:0 18px 40px rgba(15,23,42,.7);
-      --shadow-card:0 14px 30px rgba(15,23,42,.85);
-      --border-strong:1px solid rgba(148,163,184,.6);
-      --border-soft:1px solid rgba(30,64,175,0.8);
-      --tab-pill-radius:999px;
+      --bg:#fff; --card:#fff; --surface:#f8fafc; --line:#e5e7eb; --text:#0f172a; --muted:#64748b;
+      --accent:#60a5fa; --accent-strong:#3b82f6; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+      --radius:12px; --ctl-h:42px; --gap:12px; --logo-size:112px;
     }
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
-      background:radial-gradient(circle at top left,#0f172a 0,#020617 50%,#000 100%);
-      color:var(--text);
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
+    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    .wrap{max-width:1200px;margin:28px auto;padding:0 16px}
+    h1{font-size:22px;margin:0 0 8px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
+    label{display:block;color:var(--muted);margin-bottom:6px}
+    select{
+      width:100%; background:#fff; color:var(--text); border:1px solid var(--line);
+      border-radius:var(--radius); padding:10px 12px; outline:none; height:var(--ctl-h);
     }
-    .app-shell{
-      max-width:1180px;
-      width:100%;
-      margin:20px auto 32px;
-      padding:0 16px;
-    }
-    header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      margin-bottom:20px;
-      gap:12px;
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
-    .brand-logo{
-      width:40px;
-      height:40px;
-      border-radius:16px;
-      background:radial-gradient(circle at 25% 25%,#38bdf8 0,#0ea5e9 35%,#0f172a 80%);
-      box-shadow:0 10px 30px rgba(56,189,248,.6);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      position:relative;
-      overflow:hidden;
-    }
-    .brand-logo::before{
-      content:"";
-      position:absolute;
-      width:22px;
-      height:22px;
-      border-radius:50%;
-      border:3px solid rgba(15,23,42,.9);
-      box-shadow:0 0 0 3px rgba(15,23,42,.7);
-    }
-    .brand-logo::after{
-      content:"CA";
-      font-size:10px;
-      font-weight:700;
-      color:#e5f6ff;
-      letter-spacing:.04em;
-    }
-    .brand-text-title{
-      font-size:20px;
-      font-weight:700;
-      letter-spacing:.03em;
-    }
-    .brand-text-sub{
-      font-size:11px;
-      color:var(--muted);
-    }
-    .tab-group{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      background:rgba(15,23,42,.9);
-      border-radius:999px;
-      padding:4px;
-      border:1px solid rgba(51,65,85,.8);
-      box-shadow:0 14px 35px rgba(15,23,42,.8);
-    }
-    .tab-button{
-      border:none;
-      outline:none;
-      background:transparent;
-      color:var(--muted);
-      font-size:11px;
-      padding:6px 12px;
-      border-radius:999px;
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      gap:4px;
-      transition:all .16s ease-out;
-      white-space:nowrap;
-    }
-    .tab-button span.icon{
-      font-size:13px;
-    }
-    .tab-button.active{
-      background:radial-gradient(circle at 20% 0,#38bdf8 0,#0ea5e9 40%,#1e293b 100%);
-      color:#e5f6ff;
-      box-shadow:0 6px 18px rgba(56,189,248,.5);
-    }
-    .tab-button:not(.active):hover{
-      background:rgba(30,64,175,.45);
-      color:#e5e7eb;
-    }
-
-    .layout{
-      display:grid;
-      grid-template-columns: minmax(0,1.4fr) minmax(0,1.1fr);
-      gap:var(--gap);
-    }
-    .layout-single{
-      display:block;
-    }
-
-    .card{
-      background:radial-gradient(circle at top left,#020617 0,#020617 58%,#020617 100%);
-      border-radius:var(--radius);
-      border:var(--border-soft);
-      box-shadow:var(--shadow-card);
-      padding:16px 16px 14px;
-      position:relative;
-      overflow:hidden;
-    }
-    .card-header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      margin-bottom:10px;
-      gap:8px;
-    }
-    .card-title{
-      font-size:13px;
-      font-weight:600;
-      letter-spacing:.06em;
-      text-transform:uppercase;
-      display:flex;
-      align-items:center;
-      gap:6px;
-    }
-    .card-title-pill{
-      font-size:10px;
-      padding:2px 8px;
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,.6);
-      color:var(--muted);
-    }
-    .card-sub{
-      font-size:11px;
-      color:var(--muted);
-      margin-bottom:10px;
-    }
-    .pill-status{
-      font-size:10px;
-      padding:2px 7px;
-      border-radius:999px;
-      border:1px solid rgba(74,222,128,.8);
-      color:#bbf7d0;
-      background:rgba(21,128,61,.2);
-    }
-
-    .split{
-      display:grid;
-      grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);
-      gap:var(--gap);
-    }
-
-    .log-panel{
-      height:360px;
-      background:radial-gradient(circle at top,#020617 0,#020617 60%,#020617 100%);
-      border-radius:12px;
-      border:1px solid rgba(30,64,175,.7);
-      padding:10px;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      font-size:11px;
-      overflow:hidden;
-    }
-    .log-header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      color:var(--muted);
-      margin-bottom:4px;
-      font-size:10px;
-    }
-    .log-body{
-      flex:1;
-      overflow:auto;
-      padding-right:4px;
-    }
-    .log-line{
-      padding:2px 0;
-      border-bottom:1px dashed rgba(30,64,175,.4);
-      font-family:ui-monospace,Menlo,Consolas,"SF Mono",monospace;
-      word-break:break-all;
-    }
-
-    .field-group{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      margin-bottom:10px;
-    }
-    .field-label{
-      font-size:11px;
-      color:var(--muted);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:6px;
-    }
-    .field-label span.right{
-      font-size:10px;
-    }
-    .input, .select, .textarea{
-      background:#020617;
-      border-radius:10px;
-      border:1px solid rgba(30,64,175,.8);
-      height:var(--ctl-h);
-      color:var(--text);
-      font-size:12px;
-      padding:0 10px;
-      outline:none;
-      width:100%;
-      font-family:inherit;
-      transition:border .16s ease,box-shadow .16s ease,background .16s ease;
-    }
-    .input:focus, .select:focus, .textarea:focus{
-      border-color:#38bdf8;
-      box-shadow:0 0 0 1px rgba(56,189,248,.4);
-      background:#020617;
-    }
-    .textarea{
-      min-height:90px;
-      padding:8px 10px;
-      resize:vertical;
-      line-height:1.4;
-    }
-    .select{
-      padding-right:26px;
-    }
-
-    .row{
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-    .row.wrap{flex-wrap:wrap;}
-    .row.right{justify-content:flex-end;}
-    .row.between{justify-content:space-between;}
-
     .btn{
-      border:none;
-      outline:none;
-      border-radius:999px;
-      font-size:11px;
-      padding:0 14px;
-      height:30px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-      cursor:pointer;
-      white-space:nowrap;
-      font-weight:500;
-      letter-spacing:.02em;
-      transition:all .16s ease-out;
+      appearance:none; border:1px solid var(--line); background:#fff; color:var(--text);
+      padding:10px 14px; border-radius:var(--radius); cursor:pointer; transition:all .15s ease;
+      height:var(--ctl-h); display:inline-flex; align-items:center; justify-content:center;
     }
-    .btn-primary{
-      background:linear-gradient(135deg,#38bdf8,#0ea5e9);
-      color:#0b1120;
-      box-shadow:0 8px 22px rgba(56,189,248,.7);
-      border:1px solid rgba(125,211,252,.9);
-    }
-    .btn-primary:hover{filter:brightness(1.05);transform:translateY(-1px);}
-    .btn-ghost{
-      background:rgba(15,23,42,.9);
-      color:var(--muted);
-      border:1px solid rgba(51,65,85,.9);
-    }
-    .btn-ghost:hover{
-      background:rgba(30,64,175,.7);
-      color:#e5e7eb;
-    }
-    .btn-danger{
-      background:rgba(127,29,29,.9);
-      color:#fecaca;
-      border:1px solid rgba(248,113,113,.8);
-    }
-    .btn-sm{
-      height:26px;
-      padding:0 10px;
-      font-size:10px;
+    .btn:hover{border-color:var(--accent-strong);box-shadow:0 0 0 3px rgba(96,165,250,.2)}
+    .btn.acc{background:var(--accent);border-color:var(--accent);color:#fff}
+    .btn.acc:hover{background:var(--accent-strong);border-color:var(--accent-strong)}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .hint{color:#64748b;font-size:12px}
+    .err{color:#ef4444;font-family:ui-monospace,monospace;white-space:pre-wrap}
+
+    .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:#fff}
+    .pill.ok{border-color:rgba(34,197,94,.25);color:var(--ok)}
+    .pill.warn{border-color:rgba(245,158,11,.25);color:var(--warn)}
+    .pill.bad{border-color:rgba(239,68,68,.25);color:var(--bad)}
+    table{width:100%;border-collapse:collapse;border:1px solid var(--line);overflow:auto;background:#fff;border-radius:12px}
+    th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+    th{color:#0f172a;font-weight:600;background:#f1f5f9;position:sticky;top:0}
+
+    .brand{display:flex;align-items:center;gap:14px;margin:0 0 6px}
+    .brand h1{margin:0;font-size:22px}
+    .brand-logo{width:var(--logo-size);height:var(--logo-size);flex:0 0 var(--logo-size)}
+    .logo-text{
+      font-family:'Nunito','Arial Rounded MT','SF Pro Rounded','Quicksand','Pretendard','Noto Sans KR',sans-serif;
+      font-weight:900; letter-spacing:-0.2px; fill:#0f172a; font-size:18px;
+      paint-order:stroke fill; stroke:#0f172a; stroke-width:.9px;
     }
 
-    .badge{
-      font-size:10px;
-      padding:2px 7px;
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,.6);
-      color:var(--muted);
-    }
+    .brand-sub{font-size:12px;color:var(--muted);margin-top:2px}
 
-    .pill-radio-group{
-      display:flex;
-      flex-wrap:wrap;
-      gap:6px;
-    }
-    .pill-radio{
-      font-size:10px;
-      padding:4px 10px;
-      border-radius:999px;
-      border:1px solid rgba(51,65,85,.9);
-      color:var(--muted);
-      cursor:pointer;
-      user-select:none;
-    }
-    .pill-radio.active{
-      border-color:#38bdf8;
-      background:rgba(56,189,248,.12);
-      color:#e0f2fe;
-    }
+    .admin-drawer{width:520px;padding:14px 16px 18px}
+    .admin-drawer .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:none;margin:0 0 12px}
+    .admin-drawer h4{margin:0 0 8px;font-weight:700}
+    .admin-drawer label{color:#64748b;font-size:13px;margin:6px 0 4px}
+    .admin-drawer input{height:42px;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+    .admin-drawer .btn{height:36px;padding:0 12px;border-radius:12px}
+    #admList{border-collapse:collapse;width:100%}
+    #admMeta{color:#94a3b8;margin-top:8px}
+    :root{--admin-h:44px}
+    .admin-drawer input,.admin-drawer .btn{height:var(--admin-h);line-height:calc(var(--admin-h) - 2px);border-radius:12px}
 
-    .template-list{
-      border-radius:10px;
-      border:1px solid rgba(30,64,175,.7);
-      padding:8px;
-      max-height:220px;
-      overflow:auto;
-      background:radial-gradient(circle at top,#020617 0,#020617 60%,#020617 100%);
-    }
-    .template-item{
-      border-radius:8px;
-      border:1px solid rgba(30,64,175,.8);
-      padding:8px;
-      margin-bottom:6px;
-      background:rgba(15,23,42,.9);
-      font-size:11px;
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-    }
-    .template-item:last-child{margin-bottom:0;}
-    .template-title{
-      font-size:11px;
-      font-weight:600;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:6px;
-    }
-    .template-meta{
-      font-size:10px;
-      color:var(--muted);
-    }
-    .template-body{
-      white-space:pre-wrap;
-      word-break:break-word;
-    }
+    .panels{display:grid;gap:16px}
+    @media(min-width:1100px){ .panels{grid-template-columns:1fr 1fr} }
 
-    .folder-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
-      gap:10px;
-      margin-top:8px;
-      max-height:260px;
-      overflow:auto;
-    }
-    .folder-card{
-      border-radius:12px;
-      border:1px solid rgba(30,64,175,.8);
-      padding:10px;
-      background:radial-gradient(circle at top,#020617 0,#020617 60%,#020617 100%);
-      cursor:pointer;
-      position:relative;
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-      font-size:11px;
-    }
-    .folder-card:hover{
-      border-color:#38bdf8;
-      box-shadow:0 10px 26px rgba(15,23,42,.8);
-    }
-    .folder-name{
-      font-weight:600;
-      display:flex;
-      align-items:center;
-      gap:6px;
-    }
-    .folder-name span.icon{
-      font-size:15px;
-    }
-    .folder-url{
-      font-size:10px;
-      color:var(--muted);
-      word-break:break-all;
-    }
-    .folder-delete{
-      position:absolute;
-      top:6px;
-      right:6px;
-    }
+    .controls{display:grid;gap:var(--gap)}
+    .controls-line{display:grid;align-items:end;gap:var(--gap);grid-template-columns:1.2fr 1fr var(--ctl-h)}
+    .icon-btn{width:var(--ctl-h);height:var(--ctl-h);border:1px solid var(--line);border-radius:10px;background:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+    .icon-btn:hover{border-color:var(--accent-strong);box-shadow:0 0 0 3px rgba(96,165,250,.2)}
+    .icon-btn svg{width:18px;height:18px}
 
-    .csv-preview{
-      border-radius:10px;
-      border:1px solid rgba(30,64,175,.8);
-      max-height:260px;
-      overflow:auto;
-      margin-top:8px;
-      background:#020617;
+    .dirline{
+      display:grid;align-items:center;gap:8px;
+      grid-template-columns:auto minmax(120px,auto) minmax(240px,1fr) auto;
     }
-    .csv-preview table{
-      border-collapse:collapse;
-      width:100%;
-      font-size:11px;
+    .dirlabel{
+      display:none;
+      color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      font-weight:700;
     }
-    .csv-preview th, .csv-preview td{
-      border:1px solid rgba(30,64,175,.6);
-      padding:4px 6px;
-      text-align:left;
-      white-space:nowrap;
-    }
-    .csv-preview th{
-      background:rgba(15,23,42,.9);
-      position:sticky;
-      top:0;
-      z-index:1;
-    }
+    .dirlabel::before{content:"📁";margin-right:8px;opacity:.9}
+    .dirlabel.connected{display:inline-block;color:var(--accent-strong);font-weight:800}
 
-    .help-text{
-      font-size:10px;
-      color:var(--muted);
-    }
-
-    .hidden{display:none!important;}
-
-    @media (max-width:900px){
-      header{flex-direction:column;align-items:flex-start;}
-      .layout{grid-template-columns:1fr;}
-      .split{grid-template-columns:1fr;}
-      .tab-group{align-self:flex-end;}
-    }
+    .gear-btn{position:fixed;top:16px;right:16px;z-index:50;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px;cursor:pointer}
+    .admin-overlay{position:fixed;inset:0;background:rgba(15,23,42,.28);backdrop-filter:saturate(140%) blur(2px);visibility:hidden;opacity:0;pointer-events:none;transition:.15s;z-index:60}
+    .admin-overlay.open{visibility:visible;opacity:1;pointer-events:auto}
+    .admin-drawer{position:fixed;top:0;right:0;height:100%;width:520px;max-width:92vw;background:#fff;border-left:1px solid var(--line);box-shadow:-8px 0 24px rgba(0,0,0,.08);padding:16px 16px 24px;display:flex;flex-direction:column;gap:12px;z-index:70;transform:translateX(12px);opacity:0;pointer-events:none;transition:transform .15s, opacity .15s}
+    .admin-drawer.open{transform:translateX(0);opacity:1;pointer-events:auto}
+    .x-btn{appearance:none;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 8px;cursor:pointer}
   </style>
 </head>
 <body>
-  <div class="app-shell">
-    <header>
-      <div class="brand">
-        <div class="brand-logo"></div>
-        <div>
-          <div class="brand-text-title">클래스어라운드 운영봇</div>
-          <div class="brand-text-sub">카톡 입장자 · 챗봇 데이터 · 세일즈 멘트 · 드라이브 · 결제자 CSV</div>
-        </div>
-      </div>
-      <div class="tab-group" id="tabGroup">
-        <button class="tab-button active" data-tab="tab-kakao">
-          <span class="icon">💬</span>카톡 입장자
-        </button>
-        <button class="tab-button" data-tab="tab-chatbot">
-          <span class="icon">📊</span>챗봇 데이터
-        </button>
-        <button class="tab-button" data-tab="tab-sales">
-          <span class="icon">🧠</span>세일즈 멘트 GPTs
-        </button>
-        <button class="tab-button" data-tab="tab-drive">
-          <span class="icon">📁</span>드라이브 링크
-        </button>
-        <button class="tab-button" data-tab="tab-csv">
-          <span class="icon">💳</span>결제자 CSV
-        </button>
+  <button id="settingsBtn" class="gear-btn" title="설정" type="button" aria-label="관리자 설정 열기">⚙</button>
+
+  <div class="wrap">
+    <header class="brand">
+      <svg class="brand-logo" viewBox="0 0 90 50" role="img" aria-label="ClassAround">
+        <rect width="90" height="50" rx="10" fill="white"/>
+        <circle cx="66" cy="10" r="8" fill="#6b8bd6"/>
+        <circle cx="80" cy="18" r="5" fill="#ef4444"/>
+        <text x="8" y="24" class="logo-text">Class</text>
+        <text x="8" y="42" class="logo-text">Around</text>
+      </svg>
+      <div>
+        <h1>클래스어라운드 운영봇</h1>
+        <div class="brand-sub">카카오톡 입장자 체크 · 챗봇 데이터 · 세일즈 멘트 · 드라이브 · 결제자 CSV</div>
       </div>
     </header>
 
-    <!-- ========= TAB 1: 카톡 입장자 ========= -->
-    <section id="tab-kakao" class="layout">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            카카오톡 입장자 체크
-            <span class="card-title-pill">LOG · STATUS</span>
-          </div>
-          <span class="pill-status">READY</span>
-        </div>
-        <div class="card-sub">
-          왼쪽은 프로그램 실행 로그 / 오른쪽은 설정 패널로 구성한 기본 구조야.  
-          실제 로컬 실행 프로그램과 연동되는 부분(폴더 감시, 로그 입력 등)은
-          기존 코드에서 이 영역에 맞춰 붙이면 된다.
-        </div>
-        <div class="split">
-          <div class="log-panel" id="kakaoLogPanel">
-            <div class="log-header">
-              <span>실행 로그</span>
-              <button class="btn btn-ghost btn-sm" type="button" id="btnClearKakaoLog">로그 초기화</button>
+    <!-- 로그인 카드 (항상 첫 화면에 보이는 영역) -->
+    <div class="card" id="authCard">
+      <div class="row">
+        <button id="gsLoginBtn" class="btn acc" type="button">로그인</button>
+        <button id="gsLogoutBtn" class="btn" type="button">로그아웃</button>
+        <span id="authState" class="hint">로그인이 필요합니다.</span>
+      </div>
+      <div id="authErr" class="err" style="margin-top:6px"></div>
+    </div>
+
+    <!-- 기능 선택 메뉴 (로그인 후에만 표시) -->
+    <div class="card" id="featureMenuCard" style="display:none">
+      <label>기능 선택</label>
+      <div class="row" style="margin-top:4px">
+        <button id="featureBtnEntrant" class="btn acc" type="button">입장자 체크</button>
+        <button id="featureBtnChatbot" class="btn" type="button" disabled>챗봇 데이터 (준비중)</button>
+        <button id="featureBtnSales" class="btn" type="button" disabled>세일즈 멘트 GPTs (준비중)</button>
+        <button id="featureBtnDrive" class="btn" type="button" disabled>드라이브 링크 모음 (준비중)</button>
+        <button id="featureBtnCsv" class="btn" type="button" disabled>결제자 CSV 정리 (준비중)</button>
+      </div>
+      <div class="hint" style="margin-top:6px">
+        Google 로그인 후 사용하고 싶은 기능 버튼을 눌러주세요.  
+        (지금은 <strong>입장자 체크</strong>만 연결되어 있고, 나머지는 이후 코드 받으면 연결할 예정)
+      </div>
+    </div>
+
+    <!-- 기능별 섹션 컨테이너 -->
+    <div id="featureContainer">
+      <!-- 입장자 체크 섹션: 기존 Panel A/B 전체를 그대로 감쌈 -->
+      <section id="featureEntrant" data-feature-section="entrant" style="display:none">
+        <div class="panels">
+          <!-- Panel A -->
+          <section>
+            <div class="card">
+              <div class="controls">
+                <div class="controls-line">
+                  <div>
+                    <label>시트 선택</label>
+                    <select id="sheetPackSelectA"></select>
+                  </div>
+                  <div>
+                    <label>읽기 시트 선택</label>
+                    <select id="readSheetSelectA"></select>
+                  </div>
+                  <div>
+                    <label style="visibility:hidden">refresh</label>
+                    <button id="refreshMetaA" class="icon-btn" type="button">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 10 9 10"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="hint" style="margin-top:-4px"></div>
+
+                <label style="margin-top:8px"></label>
+                <div class="dirline">
+                  <button id="dirPickA" class="btn" type="button">폴더</button>
+                  <div class="dirlabel" id="dirNameA"></div>
+                  <select id="dirFileSelectA"></select>
+                  <button id="dirRefreshA" class="icon-btn" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 10 9 10"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="row" style="margin-top:10px">
+                <label class="row" style="gap:6px;align-items:center">
+                  <input id="previewOnlyA" type="checkbox" />
+                  <span class="hint">열람용</span>
+                </label>
+                <button id="runBtnA" class="btn acc" type="button">실행</button>
+                <button id="demoBtnA" class="btn" type="button">데모</button>
+                <span id="pillsAA" class="row"></span>
+              </div>
+              <div id="errA" class="err" style="margin-top:8px"></div>
             </div>
-            <div class="log-body" id="kakaoLogBody">
-              <div class="log-line">[INFO] 카카오 입장자 체크 모듈 대기 중...</div>
+            <div id="resultsA" style="display:grid;gap:16px"></div>
+          </section>
+
+          <!-- Panel B -->
+          <section>
+            <div class="card">
+              <div class="controls">
+                <div class="controls-line">
+                  <div>
+                    <label>시트 선택</label>
+                    <select id="sheetPackSelectB"></select>
+                  </div>
+                  <div>
+                    <label>읽기 시트 선택</label>
+                    <select id="readSheetSelectB"></select>
+                  </div>
+                  <div>
+                    <label style="visibility:hidden">refresh</label>
+                    <button id="refreshMetaB" class="icon-btn" type="button">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 10 9 10"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="hint" style="margin-top:-4px"></div>
+
+                <label style="margin-top:8px"></label>
+                <div class="dirline">
+                  <button id="dirPickB" class="btn" type="button">폴더</button>
+                  <div class="dirlabel" id="dirNameB"></div>
+                  <select id="dirFileSelectB"></select>
+                  <button id="dirRefreshB" class="icon-btn" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 10 9 10"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="row" style="margin-top:10px">
+                <label class="row" style="gap:6px;align-items:center">
+                  <input id="previewOnlyB" type="checkbox" />
+                  <span class="hint">열람용</span>
+                </label>
+                <button id="runBtnB" class="btn acc" type="button">실행</button>
+                <button id="demoBtnB" class="btn" type="button">데모</button>
+                <span id="pillsBB" class="row"></span>
+              </div>
+              <div id="errB" class="err" style="margin-top:8px"></div>
             </div>
-          </div>
-          <div>
-            <div class="field-group">
-              <div class="field-label">
-                <span>카톡 대화 폴더 선택 (PC톡 txt / csv 저장 위치)</span>
-              </div>
-              <div class="row">
-                <input class="input" id="kakaoFolderPath" placeholder="예: C:\Users\YOU\Documents\KakaoTalk Chats" />
-                <button class="btn btn-ghost btn-sm" type="button" id="btnMockFolderPick">폴더 선택 (메모용)</button>
-              </div>
-              <div class="help-text">
-                웹에서는 실제 폴더 접근이 안 되니, 이 값은 <strong>메모/설정용</strong>으로만 저장해둔다고 생각하면 돼.  
-                실제 폴더 감시는 로컬 프로그램 코드에서 처리하고, 여긴 UI 정리/기록 용도.
-              </div>
-            </div>
+            <div id="resultsB" style="display:grid;gap:16px"></div>
+          </section>
+        </div>
+      </section>
 
-            <div class="field-group">
-              <div class="field-label">
-                <span>카톡방 이름 / ID 메모</span>
-                <span class="right help-text">쉼표(,)로 여러 개 입력 가능</span>
-              </div>
-              <input class="input" id="kakaoRoomsInput" placeholder="예: 시니어쇼츠 1번방, 시니어쇼츠 2번방" />
-            </div>
+      <!-- 이후 코드 붙일 자리들: 지금은 비어 있고 숨겨둠 -->
+      <section id="featureChatbot" data-feature-section="chatbot" style="display:none">
+        <!-- 메신저봇R / 챗봇 데이터용 UI 여기 들어갈 예정 -->
+      </section>
 
-            <div class="field-group">
-              <div class="field-label">
-                <span>실행 컨트롤</span>
-              </div>
-              <div class="row wrap">
-                <button class="btn btn-primary" type="button" id="btnKakaoStart">
-                  ▶ 실행 (모의)
-                </button>
-                <button class="btn btn-danger" type="button" id="btnKakaoStop">
-                  ⏹ 정지 (모의)
-                </button>
-                <button class="btn btn-ghost" type="button" id="btnKakaoLogSample">
-                  💡 샘플 로그 추가
-                </button>
-              </div>
-              <div class="help-text">
-                실질적인 시작/정지 로직은 로컬 실행 프로그램 안에서 처리하고,  
-                이 버튼들은 단순히 <strong>상태 표시 + 로그 기록</strong> 용도로 사용할 수 있어.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <section id="featureSales" data-feature-section="sales" style="display:none">
+        <!-- 세일즈 멘트 GPTs UI 여기 들어갈 예정 -->
+      </section>
 
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            카톡 입장자 설정 저장
-            <span class="card-title-pill">LOCAL STORAGE</span>
-          </div>
-        </div>
-        <div class="card-sub">
-          자주 쓰는 폴더 경로 / 방 정보 등을 브라우저(localStorage)에 저장해두고  
-          운영할 때마다 재사용할 수 있게 하는 설정 영역.
-        </div>
+      <section id="featureDrive" data-feature-section="drive" style="display:none">
+        <!-- 드라이브 폴더 링크 모음 UI 여기 들어갈 예정 -->
+      </section>
 
-        <div class="field-group">
-          <div class="field-label">
-            <span>설정 프로필 이름</span>
-            <span class="right help-text">예: 시니어쇼츠 3기 입장자 체크</span>
-          </div>
-          <input class="input" id="kakaoProfileName" placeholder="프로필 이름을 입력하세요" />
-        </div>
-        <div class="row wrap">
-          <button class="btn btn-primary btn-sm" type="button" id="btnKakaoSaveProfile">
-            💾 현재 설정 저장
-          </button>
-          <button class="btn btn-ghost btn-sm" type="button" id="btnKakaoLoadLastProfile">
-            ⏪ 마지막 설정 불러오기
-          </button>
-          <span class="help-text">브라우저 단위로 저장되므로, 같은 PC/브라우저에서만 유지됨.</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========= TAB 2: 챗봇 데이터 ========= -->
-    <section id="tab-chatbot" class="layout-single hidden">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            메신저봇R · 챗봇 데이터 패널
-            <span class="card-title-pill">OVERVIEW</span>
-          </div>
-        </div>
-        <div class="card-sub">
-          메신저봇R DB 페이지, 통계 시트, 로그 시트 등 <strong>챗봇 관련 링크를 한 곳에 모아두는 허브</strong>야.  
-          아래에 링크를 추가해두고, 필요한 페이지를 바로 열 수 있어.
-        </div>
-
-        <div class="field-group">
-          <div class="field-label">
-            <span>챗봇 관련 링크 추가</span>
-            <span class="right help-text">예: 메신저봇R DB 대시보드, 명령어 정의 시트 등</span>
-          </div>
-          <input class="input" id="chatbotLinkName" placeholder="이름 (예: 메신저봇R DB 대시보드)" />
-          <input class="input" id="chatbotLinkUrl" placeholder="URL (https:// 로 시작)" />
-          <div class="row wrap">
-            <button class="btn btn-primary btn-sm" type="button" id="btnChatbotAddLink">➕ 링크 추가</button>
-            <span class="help-text">브라우저(localStorage)에만 저장되므로, 공용PC에서는 사용 시 주의.</span>
-          </div>
-        </div>
-
-        <div class="template-list" id="chatbotLinkList">
-          <!-- 동적 채움 -->
-        </div>
-      </div>
-    </section>
-
-    <!-- ========= TAB 3: 세일즈 멘트 GPTs ========= -->
-    <section id="tab-sales" class="layout-single hidden">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            세일즈 멘트 생성 · 저장
-            <span class="card-title-pill">GPTs API</span>
-          </div>
-          <span class="badge">OpenAI API 사용 (브라우저에서 직접 호출)</span>
-        </div>
-        <div class="card-sub">
-          <strong>API 키를 직접 입력</strong>해서, 시니어쇼츠 / 쇼핑쇼츠 / 각종 강의용 <strong>세일즈 멘트</strong>를  
-          생성하고, 바로 아래 리스트에 템플릿으로 저장해두는 구조야.
-        </div>
-
-        <div class="field-group">
-          <div class="field-label">
-            <span>OpenAI API Key</span>
-            <span class="right help-text">공용PC에서는 입력하지 말 것</span>
-          </div>
-          <div class="row">
-            <input class="input" id="openaiApiKey" type="password" placeholder="sk-로 시작하는 키를 입력" />
-            <button class="btn btn-ghost btn-sm" type="button" id="btnToggleApiKey">보기</button>
-          </div>
-          <div class="help-text">
-            키는 브라우저 localStorage에 <strong>선택적으로</strong> 저장할 수 있게 해둘까 했지만,  
-            안전을 위해 <strong>기본은 세션(리로드 시 사라짐)</strong>으로만 사용하도록 설계해놨어.
-          </div>
-        </div>
-
-        <div class="field-group">
-          <div class="field-label">
-            <span>기본 프롬프트(시스템 메시지)</span>
-            <span class="right help-text">너가 이미 구축한 세일즈 템플릿 요약본을 넣어도 됨</span>
-          </div>
-          <textarea class="textarea" id="salesSystemPrompt" placeholder="예: 당신은 클래스어라운드 세일즈 멘트 전문가입니다..."></textarea>
-        </div>
-
-        <div class="field-group">
-          <div class="field-label">
-            <span>요청 내용 (이번에 만들 멘트 상황 설명)</span>
-            <span class="right help-text">타깃 / 무료 or 본강 / 후킹 포인트 등</span>
-          </div>
-          <textarea class="textarea" id="salesUserPrompt" placeholder="예) 40~50대 워킹맘 대상, 시니어쇼츠 무료강의 입장 유도 멘트 5개..."></textarea>
-        </div>
-
-        <div class="row wrap">
-          <button class="btn btn-primary" type="button" id="btnGenerateSales">
-            🧠 세일즈 멘트 생성
-          </button>
-          <span class="help-text" id="salesStatusText">대기 중...</span>
-        </div>
-
-        <div class="field-group" style="margin-top:12px;">
-          <div class="field-label">
-            <span>생성 결과</span>
-          </div>
-          <textarea class="textarea" id="salesResult" placeholder="여기에 GPT 결과가 표시됩니다." readonly></textarea>
-        </div>
-
-        <div class="row wrap">
-          <input class="input" id="salesTemplateTitle" placeholder="이 결과를 저장할 이름 (예: 4050 시니어쇼츠 무료강의 오프닝)" />
-          <button class="btn btn-primary btn-sm" type="button" id="btnSaveSalesTemplate">💾 템플릿으로 저장</button>
-        </div>
-
-        <div class="field-group">
-          <div class="field-label">
-            <span>저장된 세일즈 멘트 템플릿</span>
-          </div>
-          <div class="template-list" id="salesTemplateList">
-            <!-- 세일즈 템플릿 저장 리스트 -->
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========= TAB 4: 드라이브 폴더 링크 ========= -->
-    <section id="tab-drive" class="layout-single hidden">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            Google Drive 폴더 링크 모음
-            <span class="card-title-pill">FOLDER SHORTCUTS</span>
-          </div>
-        </div>
-        <div class="card-sub">
-          자주 사용하는 <strong>공유 드라이브 / 강의별 자료 폴더 / 디자인 에셋 폴더</strong> 링크를  
-          한 번에 관리하는 공간이야.  
-          입력 → 저장하면 <strong>폴더 아이콘 카드</strong>로 나타나고, 클릭 시 새 탭으로 바로 이동.
-        </div>
-
-        <div class="field-group">
-          <div class="field-label">
-            <span>폴더 이름</span>
-            <span class="right help-text">예: 시니어쇼츠 썸네일 원본 폴더</span>
-          </div>
-          <input class="input" id="driveFolderName" placeholder="폴더 이름" />
-        </div>
-        <div class="field-group">
-          <div class="field-label">
-            <span>폴더 링크(URL)</span>
-            <span class="right help-text">Google Drive 공유 URL 그대로 복붙</span>
-          </div>
-          <input class="input" id="driveFolderUrl" placeholder="https://drive.google.com/..." />
-        </div>
-        <div class="row wrap">
-          <button class="btn btn-primary btn-sm" type="button" id="btnAddDriveFolder">
-            📁 폴더 추가
-          </button>
-          <button class="btn btn-ghost btn-sm" type="button" id="btnClearDriveFolders">
-            🗑 전체 삭제
-          </button>
-          <span class="help-text">브라우저 localStorage에 저장. 노트북/브라우저 바뀌면 다시 등록 필요.</span>
-        </div>
-
-        <div class="folder-grid" id="driveFolderGrid">
-          <!-- 동적 폴더 카드 -->
-        </div>
-      </div>
-    </section>
-
-    <!-- ========= TAB 5: 결제자 CSV 정리 ========= -->
-    <section id="tab-csv" class="layout-single hidden">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            결제자 CSV → 정리 · 업로드
-            <span class="card-title-pill">CSV PIPELINE</span>
-          </div>
-        </div>
-        <div class="card-sub">
-          관리자 페이지에서 다운받은 <strong>결제 내역 CSV</strong>를 업로드해서  
-          브라우저에서 먼저 구조를 확인하고,  
-          필요하면 정리본을 다시 CSV로 다운로드하거나, Apps Script 웹앱으로 전송하는 구간이야.
-        </div>
-
-        <div class="field-group">
-          <div class="field-label">
-            <span>CSV 파일 업로드</span>
-            <span class="right help-text">UTF-8 CSV 권장</span>
-          </div>
-          <input class="input" id="csvFileInput" type="file" accept=".csv,text/csv" />
-        </div>
-
-        <div class="field-group">
-          <div class="field-label">
-            <span>Apps Script WebApp URL (선택)</span>
-            <span class="right help-text">시트에 바로 넣고 싶을 때만 사용</span>
-          </div>
-          <input class="input" id="csvWebAppUrl" placeholder="https://script.google.com/macros/s/..." />
-          <div class="help-text">
-            여기에 URL을 넣고 <strong>“시트로 전송”</strong> 버튼을 누르면,  
-            현재 파싱된 CSV 데이터를 JSON으로 보내도록 설계되어 있어.  
-            실제 처리 로직은 Apps Script에서 받는 형식에 맞게 구현해주면 된다.
-          </div>
-        </div>
-
-        <div class="row wrap">
-          <button class="btn btn-primary btn-sm" type="button" id="btnDownloadCsvClean">
-            💾 정리본 CSV 다운로드
-          </button>
-          <button class="btn btn-ghost btn-sm" type="button" id="btnSendCsvToWebApp">
-            📤 시트로 전송 (WebApp)
-          </button>
-          <span class="help-text" id="csvStatusText">CSV 미로딩</span>
-        </div>
-
-        <div class="csv-preview" id="csvPreviewContainer" style="display:none;">
-          <table id="csvPreviewTable"></table>
-        </div>
-      </div>
-    </section>
+      <section id="featureCsv" data-feature-section="csv" style="display:none">
+        <!-- 결제자 CSV 정리 UI 여기 들어갈 예정 -->
+      </section>
+    </div>
   </div>
 
-  <script>
-    // ========= 공통 탭 전환 =========
-    const tabButtons = document.querySelectorAll(".tab-button");
-    const tabs = document.querySelectorAll("section[id^='tab-']");
+  <div id="adminOverlay" class="admin-overlay" aria-hidden="true"></div>
+  <aside id="adminDrawer" class="admin-drawer" aria-hidden="true">
+    <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h3 style="margin:0">관리자 설정</h3>
+      <button id="closeAdmin" class="x-btn" type="button">닫기</button>
+    </div>
 
-    tabButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const target = btn.dataset.tab;
-        tabButtons.forEach(b => b.classList.toggle("active", b === btn));
-        tabs.forEach(tab => {
-          tab.classList.toggle("hidden", tab.id !== target);
-        });
+    <div class="card" style="margin:0">
+      <h4 style="margin:0 0 8px">스프레드시트 연결 추가</h4>
+      <label>표시 이름(선택)</label>
+      <input id="admLabel" type="text" placeholder="예: 디노 쿠팡 3기" />
+      <label style="margin-top:10px">스프레드시트 링크(URL)</label>
+      <input id="admUrl" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." />
+      <label style="margin-top:10px">읽을 열(A~) <span class="hint">읽기 시트 이름열(예: C)</span></label>
+      <input id="admReadCol" type="text" value="G" />
+      <div class="row" style="margin-top:10px">
+        <button id="admAdd" class="btn" type="button">연결 추가</button>
+        <button id="admClearAll" class="btn" type="button">전체 삭제</button>
+      </div>
+      <div id="admErr" class="err" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h4 style="margin:0 0 8px">등록된 스프레드시트</h4>
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr><th>라벨</th><th>시트수</th><th>읽을 열</th><th>작업</th></tr></thead>
+        <tbody id="admList"><tr><td colspan="4" style="color:#64748b">없음</td></tr></tbody>
+      </table>
+      <div class="hint" id="admMeta" style="margin-top:6px"></div>
+    </div>
+  </aside>
+
+<script>
+const PANEL_SUFFIXES=['A','B'];
+const $$=id=>document.getElementById(id);
+const byPanel=(base,s)=>$$(base+s);
+const txt=(id,v,sfx)=>{const el=sfx?byPanel(id,sfx):$$(id);if(el)el.textContent=v||'';};
+const val=(id,sfx)=>{const el=sfx?byPanel(id,sfx):$$(id);return el?el.value:'';};
+function on(id,ev,fn,sfx){
+  const el=sfx?byPanel(id,sfx):$$(id);
+  if(!el){console.warn('bind skip',id,sfx);return;}
+  el.addEventListener(ev,e=>{try{fn(e);}catch(err){console.error(err);}});
+}
+function show(el){el.classList.add('open');el.setAttribute('aria-hidden','false');}
+function hide(el){el.classList.remove('open');el.setAttribute('aria-hidden','true');}
+function digitsOnly(s){return String(s||'').replace(/[^\d]/g,'');}
+function last4Digits(s){const d=digitsOnly(s);return d.slice(-4);}
+function normalizeName(n){
+  let s=String(n||'').trim();
+  s=s.replace(/[\s]*[\(\[\{（【][^)\]\}）】]*[\)\]\}）】]\s*$/,'');
+  s=s.replace(/[/_\-\s]+$/,'');
+  s=s.replace(/\s+/g,' ');
+  return s;
+}
+const earlierId=(a,b)=>{const ai=parseInt(a,10),bi=parseInt(b,10);if(!Number.isNaN(ai)&&!Number.isNaN(bi))return ai<=bi?a:b;return(String(a)<=String(b))?a:b;};
+
+(function(){
+  const pushErr=(msg,src,l,c,e)=>{
+    const details=(e&&e.stack)?'\n'+e.stack:'';
+    PANEL_SUFFIXES.forEach(s=>{
+      const el=$$('#err'+s);
+      if(el)el.textContent='오류: '+msg+(src?`\n${src}:${l}:${c}`:'')+details;
+    });
+  };
+  window.addEventListener('error',e=>pushErr(e.message,e.filename,e.lineno,e.colno,e.error));
+  window.addEventListener('unhandledrejection',e=>{
+    const r=e.reason||{};
+    pushErr(r.message||String(r),'',0,0,r);
+  });
+})();
+
+/* ===== 기본 설정 ===== */
+const READ_START_ROW=2;
+const WRITE_START_ROW=2;
+const FIXED_WRITE_SHEET='공유용 시트';
+
+/* ✅ 여기에 본인 OAuth 클라이언트 ID 넣기 */
+const CLIENT_ID="18228268359-iifm4ck3j9kqj74eh1p90tco1k2mbpi0.apps.googleusercontent.com";
+
+/* ===== OAuth ===== */
+let accessToken=null,tokenClient=null;
+
+function setFeatureVisibility(isLoggedIn){
+  const menuCard=$$('featureMenuCard');
+  if(menuCard) menuCard.style.display=isLoggedIn?'block':'none';
+  if(!isLoggedIn){
+    // 모든 기능 섹션 숨기기
+    document.querySelectorAll('[data-feature-section]').forEach(sec=>{
+      sec.style.display='none';
+    });
+  }
+}
+
+function showFeatureSection(key){
+  document.querySelectorAll('[data-feature-section]').forEach(sec=>{
+    sec.style.display = (sec.dataset.featureSection===key)?'block':'none';
+  });
+}
+
+function initAuth(){
+  try{
+    if(!window.google?.accounts?.oauth2){txt('authErr','GIS 로드 실패');return;}
+    tokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:CLIENT_ID,
+      scope:'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly',
+      prompt:'',
+      callback:res=>{
+        accessToken=res.access_token;
+        txt('authState','로그인 완료');
+        txt('authErr','');
+        setFeatureVisibility(true);
+      },
+      error_callback:err=>{
+        txt('authErr','OAuth 오류: '+(err?.error||err?.type||JSON.stringify(err)));
+      }
+    });
+  }catch(e){txt('authErr','OAuth 초기화 오류');console.error(e);}
+}
+function requestAccess(){
+  if(!tokenClient){txt('authErr','OAuth 초기화 실패');return;}
+  tokenClient.requestAccessToken({prompt:'consent'});
+}
+function revokeAccess(){
+  if(accessToken){
+    google.accounts.oauth2.revoke(accessToken,()=>{
+      accessToken=null;
+      txt('authState','미로그인');
+      setFeatureVisibility(false);
+    });
+  }else{
+    setFeatureVisibility(false);
+    txt('authState','미로그인');
+  }
+}
+function requireAuth(){if(!accessToken)throw new Error('먼저 Google 로그인하세요.');}
+
+/* ===== Sheets ===== */
+async function gFetch(url,init){
+  requireAuth();
+  const res=await fetch(url,{...(init||{}),headers:{...(init&&init.headers||{}),Authorization:'Bearer '+accessToken,'Content-Type':'application/json'}});
+  if(!res.ok)throw new Error(await res.text());
+  return res.json();
+}
+async function listSheets(spreadsheetId){
+  const url=`https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}?fields=sheets(properties(title))`;
+  const data=await gFetch(url);
+  return (data.sheets||[]).map(s=>s.properties.title);
+}
+async function getRange(spreadsheetId,rangeA1){
+  const url=`https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(rangeA1)}`;
+  return await gFetch(url);
+}
+async function batchUpdateValues(spreadsheetId,dataRanges){
+  const url=`https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values:batchUpdate`;
+  return await gFetch(url,{method:'POST',body:JSON.stringify({valueInputOption:'USER_ENTERED',data:dataRanges})});
+}
+
+/* ===== 관리자 저장 ===== */
+const PACKS_KEY='ca_gsapi_sources_v12';
+const loadPacks=()=>{try{return JSON.parse(localStorage.getItem(PACKS_KEY)||'[]');}catch(e){return[];}};
+const savePacks=ps=>localStorage.setItem(PACKS_KEY,JSON.stringify(ps));
+const addPack=p=>{const a=loadPacks();a.push(p);savePacks(a);};
+const removePack=id=>savePacks(loadPacks().filter(p=>p.id!==id));
+const clearPacks=()=>localStorage.removeItem(PACKS_KEY);
+
+let admBusy=false;
+async function admAdd(){
+  if(admBusy)return;
+  admBusy=true;
+  try{
+    txt('admErr','');
+    const label=(val('admLabel').trim()||'스프레드시트');
+    const urlOrId=val('admUrl').trim();
+    const m=urlOrId.match(/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+    const sheetId=m?m[1]:urlOrId;
+    const readCol=(val('admReadCol').trim()||'C').toUpperCase();
+    if(!sheetId)throw new Error('스프레드시트 링크/ID를 입력하세요.');
+    const titles=await listSheets(sheetId);
+    const pack={id:`${Date.now()}_${Math.random().toString(36).slice(2,7)}`,label,sheetId,readCol,sheets:titles};
+    addPack(pack);
+    ['admLabel','admUrl'].forEach(id=>{const el=$$(id);if(el)el.value='';});
+    const rc=$$('admReadCol');if(rc)rc.value='C';
+    renderAdmList();populatePacks('A');populatePacks('B');
+    alert('연결 완료! 각 패널에서 선택하세요.');
+  }catch(e){txt('admErr',e.message);}
+  finally{admBusy=false;}
+}
+function renderAdmList(){
+  const list=loadPacks();const tb=$$('admList');if(!tb)return;tb.innerHTML='';
+  if(!list.length){tb.innerHTML='<tr><td colspan="4" style="color:#64748b">없음</td></tr>';txt('admMeta','');return;}
+  list.forEach(p=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${p.label}</td><td>${p.sheets?.length||0}</td><td>${p.readCol}</td><td><button class="btn" data-del="${p.id}" type="button">삭제</button></td>`;
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('button[data-del]').forEach(b=>b.addEventListener('click',e=>{
+    removePack(e.target.getAttribute('data-del'));renderAdmList();populatePacks('A');populatePacks('B');
+  }));
+  txt('admMeta',`총 ${list.length}개 연결 · ${new Date().toLocaleString()}`);
+}
+
+/* ===== 시트 셀렉트 ===== */
+function populatePacks(sfx){
+  const packs=loadPacks();const sel=byPanel('sheetPackSelect',sfx);if(!sel)return;sel.innerHTML='';
+  const readSel=byPanel('readSheetSelect',sfx);
+  if(!packs.length){
+    sel.appendChild(new Option('(스프레드시트 연결)',''));
+    if(readSel)readSel.innerHTML='';
+    return;
+  }
+  sel.appendChild(new Option('스프레드시트 선택',''));
+  packs.forEach(p=>sel.appendChild(new Option(p.label,p.id)));
+  const prev=sessionStorage.getItem('ca_prev_pack_'+sfx);
+  if(prev){const o=[...sel.options].find(x=>x.value===prev);if(o)o.selected=true;}
+  onPackChanged(sfx);
+}
+async function refreshMeta(sfx){
+  try{
+    const sel=byPanel('sheetPackSelect',sfx);if(!sel)return;
+    const id=sel.value;if(!id)return;
+    const packs=loadPacks();const idx=packs.findIndex(p=>p.id===id);if(idx<0)return;
+    const titles=await listSheets(packs[idx].sheetId);
+    packs[idx].sheets=titles;savePacks(packs);onPackChanged(sfx);
+  }catch(e){txt('err'+sfx,'시트 목록 갱신 실패: '+e.message);}
+}
+function onPackChanged(sfx){
+  const sel=byPanel('sheetPackSelect',sfx);if(!sel)return;
+  const id=sel.value;sessionStorage.setItem('ca_prev_pack_'+sfx,id||'');
+  const packs=loadPacks();const p=packs.find(x=>x.id===id);
+  const readSel=byPanel('readSheetSelect',sfx);
+  if(readSel)readSel.innerHTML='';
+  if(!p)return;
+  if(readSel)readSel.appendChild(new Option('읽기 시트 선택',''));
+  (p.sheets||[]).forEach(t=>{if(readSel)readSel.appendChild(new Option(t,t));});
+}
+
+/* ===== 드라이브 폴더 / 파일 ===== */
+let driveFolderId={A:null,B:null};
+let driveFiles={A:[],B:[]};
+
+function extractDriveFolderId(input){
+  const s=String(input||'').trim();if(!s)return'';
+  const m=s.match(/folders\/([a-zA-Z0-9_-]+)/);
+  if(m)return m[1];
+  return s;
+}
+async function getDriveFolderName(folderId){
+  requireAuth();
+  const url=`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(folderId)}?fields=name`;
+  const res=await fetch(url,{headers:{Authorization:'Bearer '+accessToken}});
+  if(!res.ok)throw new Error(await res.text());
+  const data=await res.json();
+  return data.name||folderId;
+}
+async function pickDriveFolder(sfx){
+  try{
+    const input=prompt('구글 드라이브 폴더 URL 또는 ID를 입력하세요.','');
+    if(!input)return;
+    const id=extractDriveFolderId(input);
+    if(!id)throw new Error('폴더 ID를 인식할 수 없습니다.');
+    driveFolderId[sfx]=id;
+    await refreshDriveList(sfx);
+  }catch(e){
+    alert('드라이브 폴더 설정 실패: '+e.message);
+    console.error(e);
+  }
+}
+async function listDriveTxtFiles(folderId){
+  requireAuth();
+  const q=`'${folderId}' in parents and (mimeType='text/plain' or mimeType='text/csv') and trashed=false`;
+  const url=`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,modifiedTime,size)&orderBy=modifiedTime desc&pageSize=1000`;
+  const res=await fetch(url,{headers:{Authorization:'Bearer '+accessToken}});
+  if(!res.ok)throw new Error(await res.text());
+  const data=await res.json();
+  return data.files||[];
+}
+async function refreshDriveList(sfx){
+  const sel=byPanel('dirFileSelect',sfx);
+  const nameSpan=byPanel('dirName',sfx);
+  driveFiles[sfx]=[];
+  if(sel)sel.innerHTML='';
+  const folderId=driveFolderId[sfx];
+  if(!folderId){
+    if(nameSpan){nameSpan.textContent='';nameSpan.classList.remove('connected');}
+    if(sel)sel.appendChild(new Option('(드라이브 폴더 연결)',''));
+    return;
+  }
+  try{
+    const files=await listDriveTxtFiles(folderId);
+    driveFiles[sfx]=files.map(f=>({id:f.id,name:f.name,size:f.size||0,mtime:f.modifiedTime?Date.parse(f.modifiedTime):0}));
+    if(nameSpan){
+      let displayName=folderId;
+      try{displayName=await getDriveFolderName(folderId);}catch(e){console.warn('폴더 이름 조회 실패',e);}
+      nameSpan.textContent=displayName;
+      nameSpan.classList.add('connected');
+    }
+    if(sel){
+      sel.appendChild(new Option('폴더 내 파일 선택',''));
+      driveFiles[sfx].forEach((f,idx)=>sel.appendChild(new Option(f.name,String(idx))));
+    }
+  }catch(e){
+    if(nameSpan){nameSpan.textContent='';nameSpan.classList.remove('connected');}
+    if(sel)sel.appendChild(new Option('(드라이브 접근 오류)',''));
+    console.error(e);
+    alert('드라이브 파일 목록을 불러오지 못했습니다: '+e.message);
+  }
+}
+
+/* ✅ txt / csv 읽기 : csv는 C열만 */
+async function readSelectedTxt(sfx){
+  const idxStr=val('dirFileSelect',sfx);
+  if(!idxStr)throw new Error('폴더 내 파일을 선택하세요.');
+  const info=driveFiles[sfx][Number(idxStr)];
+  if(!info)throw new Error('선택한 파일을 찾을 수 없습니다.');
+
+  requireAuth();
+  const url=`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(info.id)}?alt=media`;
+  const res=await fetch(url,{headers:{Authorization:'Bearer '+accessToken}});
+  if(!res.ok)throw new Error(await res.text());
+
+  const raw=await res.text();
+
+  // csv면 C열(3번째 열)만 줄 단위로 추출
+  if(info.name.toLowerCase().endsWith('.csv')){
+    const lines=raw.split(/\r?\n/);
+    const colC=[];
+    for(let i=0;i<lines.length;i++){
+      const line=lines[i];
+      if(!line.trim())continue;
+      const cells=line.split(',');
+      if(cells.length<3)continue;
+      let cell=cells[2].trim();
+      if(cell.startsWith('"')&&cell.endsWith('"')){
+        cell=cell.slice(1,-1);
+      }
+      if(cell)colC.push(cell);
+    }
+    return colC.join('\n');
+  }
+
+  // txt는 그대로
+  return raw;
+}
+
+/* ===== 카톡 파싱 ===== */
+const JOIN_PAT=/(.*?)님이\s*(입장하셨습니다|들어왔습니다|입장했습니다|들어오셨습니다)[\s\.\!]*$/;
+const LEAVE_PAT=/(.*?)님이\s*(퇴장하셨습니다|나갔습니다|퇴장했습니다|나가셨습니다)[\s\.\!]*$/;
+const KICK_PAT=/(.*?)님을\s*(내보냈습니다|강퇴했습니다|추방했습니다)[\s\.\!]*$/;
+
+function splitNickname(nick){
+  const raw=String(nick||'').trim();
+  if(!raw)return null;
+  const idx=raw.search(/\d/);
+  let namePart=idx>=0?raw.slice(0,idx):raw;
+  let name=namePart.replace(/[/_\-\s]+$/,'');
+  name=normalizeName(name);
+  if(!name)return{name:raw,digits:null};
+  const digitsAll=raw.replace(/[^\d]/g,'');
+  const digits=digitsAll.length>=4?digitsAll.slice(-4):null;
+  return{name,digits};
+}
+function parseChat(text){
+  const lines=text.split(/\r?\n/);
+  const events=[];let joinedCount=0,leftCount=0;
+  for(const raw of lines){
+    const line=raw.trim();if(!line)continue;
+    let m=line.match(JOIN_PAT);if(m){events.push({type:'join',nick:m[1].trim(),raw:line});joinedCount++;continue;}
+    m=line.match(LEAVE_PAT);if(m){events.push({type:'leave',nick:m[1].trim(),raw:line});leftCount++;continue;}
+    m=line.match(KICK_PAT);if(m){events.push({type:'leave',nick:m[1].trim(),raw:line});leftCount++;continue;}
+  }
+  return{events,joinedCount,leftCount};
+}
+
+/* ===== 실행 ===== */
+async function runMain(sfx){
+  try{
+    txt('err','',sfx);
+    const resultsEl=byPanel('results',sfx);if(resultsEl)resultsEl.innerHTML='';
+    const previewOnly=byPanel('previewOnly',sfx)?.checked;
+
+    const chatText=await readSelectedTxt(sfx);
+    const packSel=byPanel('sheetPackSelect',sfx);if(!packSel||!packSel.value)throw new Error('스프레드시트를 선택하세요.');
+    const readSheet=val('readSheetSelect',sfx);if(!readSheet)throw new Error('읽기 시트를 선택하세요.');
+    const writeSheet=FIXED_WRITE_SHEET;
+
+    const packs=loadPacks();const pack=packs.find(x=>x.id===packSel.value);if(!pack)throw new Error('연결 정보를 찾을 수 없습니다.');
+    const sheetId=pack.sheetId;const readCol=pack.readCol||'C';
+
+    const {events,joinedCount,leftCount}=parseChat(chatText);
+
+    const NAME_ONLY_SENTINEL='__NAMEONLY__';
+    const activeDigitsByName=new Map();
+    const leftFinalDigitsByName=new Map();
+    const nameOnlyJoin=new Set();
+    const ensure=(map,key)=>{if(!map.has(key))map.set(key,new Set());return map.get(key);};
+
+    for(const ev of events){
+      const s=splitNickname(ev.nick);
+      if(!s)continue;
+      const nN=s.name;
+      if(ev.type==='join'){
+        ensure(activeDigitsByName,nN).add(s.digits||NAME_ONLY_SENTINEL);
+        if(leftFinalDigitsByName.has(nN)){
+          const L=leftFinalDigitsByName.get(nN);
+          L.delete(s.digits||NAME_ONLY_SENTINEL);
+          if(L.size===0)leftFinalDigitsByName.delete(nN);
+        }
+        if(!s.digits)nameOnlyJoin.add(nN);
+      }else{
+        const A=ensure(activeDigitsByName,nN);
+        if(s.digits)A.delete(s.digits);
+        else if(A.size===1&&A.has(NAME_ONLY_SENTINEL))A.delete(NAME_ONLY_SENTINEL);
+        ensure(leftFinalDigitsByName,nN).add(s.digits||NAME_ONLY_SENTINEL);
+      }
+    }
+
+    const readNames=await getRange(sheetId,`${readSheet}!${readCol}${READ_START_ROW}:${readCol}`);
+    const readRows=readNames.values||[];
+    const rosterNames=[];const rosterNamesN=[];const rosterSetN=new Set();
+    for(let i=0;i<readRows.length;i++){
+      const nm=String(readRows[i]?.[0]??'').trim();
+      if(!nm)continue;
+      const nN=normalizeName(nm);
+      rosterNames.push(nm);
+      rosterNamesN.push(nN);
+      rosterSetN.add(nN);
+    }
+
+    const wAtoE=await getRange(sheetId,`${writeSheet}!A${WRITE_START_ROW}:E`);
+    const wRowsAE=wAtoE.values||[];
+    const earliestByKey=new Map();
+    const earliestByName=new Map();
+    for(const r of wRowsAE){
+      const id=(r[0]??'').toString().trim();
+      const nameRaw=(r[3]??'').toString().trim();
+      const phoneRaw=(r[4]??'').toString().trim();
+      if(!id||!nameRaw)continue;
+      const nN=normalizeName(nameRaw);
+      const p4=last4Digits(phoneRaw);
+      if(p4){
+        const key=nN+'|'+p4;
+        if(!earliestByKey.has(key))earliestByKey.set(key,{id,phoneFull:phoneRaw,phone4:p4});
+        else{
+          const cur=earliestByKey.get(key);
+          earliestByKey.set(key,earlierId(cur.id,id)===cur.id?cur:{id,phoneFull:phoneRaw,phone4:p4});
+        }
+      }
+      if(!earliestByName.has(nN))earliestByName.set(nN,{id,phoneFull:phoneRaw,phone4:p4});
+      else{
+        const cur=earliestByName.get(nN);
+        earliestByName.set(nN,earlierId(cur.id,id)===cur.id?cur:{id,phoneFull:phoneRaw,phone4:p4});
+      }
+    }
+
+    const isAttendingNameN=nN=>{
+      const set=activeDigitsByName.get(nN);
+      return(set&&set.size>0)||nameOnlyJoin.has(nN);
+    };
+    const attendingSetN=new Set([...rosterSetN].filter(nN=>isAttendingNameN(nN)));
+
+    const report=[];
+    for(let i=0;i<rosterNames.length;i++){
+      const nm=rosterNames[i];
+      const nN=rosterNamesN[i];
+      const phoneFull=earliestByName.get(nN)?.phoneFull||'';
+      const set=activeDigitsByName.get(nN)||new Set();
+      const any4=[...set].find(x=>x!==NAME_ONLY_SENTINEL)||'';
+      const matchedId=
+        any4&&earliestByKey.get(nN+'|'+any4)?earliestByKey.get(nN+'|'+any4).id:
+        earliestByName.get(nN)?.id||'';
+      const notes=(isAttendingNameN(nN)&&!any4)?'(번호없음)':'';
+      const status=attendingSetN.has(nN)?'입장':'미입장';
+      const rosterNo=matchedId;
+      report.push([rosterNo,nm,phoneFull,status,any4?`${nm}/${any4}`:(status==='입장'?nm:''),notes]);
+    }
+
+    const extra=[];
+    [...activeDigitsByName.entries()].sort(([a],[b])=>a.localeCompare(b,'ko')).forEach(([nN,set])=>{
+      if(!rosterSetN.has(nN)){
+        const digits=[...set].filter(x=>x!==NAME_ONLY_SENTINEL);
+        if(digits.length)digits.forEach(d=>extra.push([`${nN}/${d}`]));
+        if(set.has(NAME_ONLY_SENTINEL))extra.push([`${nN}(번호없음)`]);
+      }
+    });
+
+    const leavers=[];
+    [...leftFinalDigitsByName.entries()].sort(([a],[b])=>a.localeCompare(b,'ko')).forEach(([nN,set])=>{
+      const activeSet=activeDigitsByName.get(nN);
+      set.forEach(d=>{
+        if(!activeSet||!activeSet.has(d)){
+          if(d===NAME_ONLY_SENTINEL)leavers.push([`${nN}(번호없음)`]);
+          else leavers.push([`${nN}/${d}`]);
+        }
       });
     });
 
-    // ========= 간단 로깅 유틸 =========
-    function appendLog(containerId, message){
-      const body = document.getElementById(containerId);
-      if(!body) return;
-      const line = document.createElement("div");
-      line.className = "log-line";
-      const now = new Date();
-      const hh = String(now.getHours()).padStart(2,"0");
-      const mm = String(now.getMinutes()).padStart(2,"0");
-      const ss = String(now.getSeconds()).padStart(2,"0");
-      line.textContent = `[${hh}:${mm}:${ss}] ${message}`;
-      body.appendChild(line);
-      body.scrollTop = body.scrollHeight;
+    const readWriteRange=`${writeSheet}!D${WRITE_START_ROW}:T`;
+    const wdata=await getRange(sheetId,readWriteRange);
+    const rows=wdata.values||[];
+    const targetRowsIdx=[];
+    const nameCountN=new Map();
+    for(let i=0;i<rows.length;i++){
+      const r=rows[i]||[];
+      const tVal=(r[16]??'').toString().trim(); // T열
+      if(tVal!=='수강생')continue;
+      const nameN=normalizeName(String(r[0]??'')); // D
+      if(!nameN)continue;
+      targetRowsIdx.push(i);
+      nameCountN.set(nameN,(nameCountN.get(nameN)||0)+1);
+    }
+    const updates=[];
+    const unresolved=[];
+    for(const i of targetRowsIdx){
+      const r=rows[i]||[];
+      const nameRaw=String(r[0]??'').trim();
+      const nameN=normalizeName(nameRaw);
+      const phone4=last4Digits(r[1]??'');
+      if(!nameN)continue;
+      if(!attendingSetN.has(nameN))continue;
+      const set=activeDigitsByName.get(nameN)||new Set();
+      const isDupInPaid=(nameCountN.get(nameN)||0)>1;
+      let canWrite=false;
+      if(isDupInPaid){
+        if(phone4&&set.has(phone4))canWrite=true;
+        else{
+          if(set.has(NAME_ONLY_SENTINEL))unresolved.push([nameRaw,'공유시트 동명이인 + 입장로그 번호없음']);
+          else unresolved.push([nameRaw,'공유시트 동명이인 + 번호불일치']);
+        }
+      }else{
+        if(set.size>=1||set.has(NAME_ONLY_SENTINEL))canWrite=true;
+      }
+      if(canWrite){
+        const rowNumber=WRITE_START_ROW+i;
+        updates.push({range:`${writeSheet}!S${rowNumber}`,values:[['입장']]});
+      }
     }
 
-    // ========= TAB1: 카톡 입장자 =========
-    (function initKakao(){
-      const logBody = document.getElementById("kakaoLogBody");
-      const btnClearLog = document.getElementById("btnClearKakaoLog");
-      const btnStart = document.getElementById("btnKakaoStart");
-      const btnStop = document.getElementById("btnKakaoStop");
-      const btnSample = document.getElementById("btnKakaoLogSample");
-      const btnMockFolder = document.getElementById("btnMockFolderPick");
-      const folderInput = document.getElementById("kakaoFolderPath");
-      const roomsInput = document.getElementById("kakaoRoomsInput");
-      const profileNameInput = document.getElementById("kakaoProfileName");
-      const btnSaveProfile = document.getElementById("btnKakaoSaveProfile");
-      const btnLoadLast = document.getElementById("btnKakaoLoadLastProfile");
+    if(updates.length&&!previewOnly){
+      await batchUpdateValues(sheetId,updates);
+    }
 
-      btnClearLog.addEventListener("click", () => {
-        logBody.innerHTML = "";
-        appendLog("kakaoLogBody","로그를 초기화했습니다.");
-      });
+    const pills=$$('#pills'+sfx+sfx);
+    if(pills){
+      pills.innerHTML='';
+      const mk=(t,c)=>{const s=document.createElement('span');s.className='pill '+c;s.textContent=t;return s;};
+      pills.appendChild(mk(`입장로그 join ${joinedCount}`,'ok'));
+      pills.appendChild(mk(`퇴장로그 leave ${leftCount}`,'bad'));
+      pills.appendChild(mk(`입장 대상(읽기시트) ${attendingSetN.size}`,'warn'));
+      if(previewOnly)pills.appendChild(mk('체크만','warn'));
+    }
 
-      btnStart.addEventListener("click", () => {
-        appendLog("kakaoLogBody","카톡 입장자 체크 모듈 실행 (UI 상 모의 동작).");
-      });
+    function resTbl(title,headers,rowsArr){
+      if(!resultsEl)return;
+      const wrap=document.createElement('div');wrap.className='card';
+      const h=document.createElement('h3');h.textContent=title;h.style.margin='0 0 8px';wrap.appendChild(h);
+      const t=document.createElement('table');const thead=document.createElement('thead');const trh=document.createElement('tr');
+      headers.forEach(x=>{const th=document.createElement('th');th.textContent=x;trh.appendChild(th);});
+      thead.appendChild(trh);t.appendChild(thead);
+      const tb=document.createElement('tbody');
+      (rowsArr||[]).forEach(r=>{const tr=document.createElement('tr');(r||[]).forEach(c=>{const td=document.createElement('td');td.textContent=(c==null?'':String(c));tr.appendChild(td);});tb.appendChild(tr);});
+      t.appendChild(tb);wrap.appendChild(t);resultsEl.appendChild(wrap);
+    }
+    resTbl('내 명단 기준 상태(읽기 시트)',['no','name','phone','status','matched_id','notes'],report);
+    resTbl('명단 외 입장자',['name/last4 or (번호없음)'],extra);
+    resTbl('퇴장자 명단(최종)',['name/last4 or (번호없음)'],leavers);
+    resTbl(previewOnly?'예상 갱신 결과(체크만 모드)':'공유 시트 갱신 결과',['updated_cells'],updates.map(u=>[u.range+' ← 입장']));
+    resTbl('미확인 목록(공유 시트 동명이인/번호 문제)',['name','reason'],unresolved);
 
-      btnStop.addEventListener("click", () => {
-        appendLog("kakaoLogBody","카톡 입장자 체크 모듈 정지 (UI 상 모의 동작).");
-      });
+  }catch(e){
+    txt('err','오류: '+(e?.message||e),sfx);
+    console.error(e);
+  }
+}
 
-      btnSample.addEventListener("click", () => {
-        appendLog("kakaoLogBody","[DEBUG] 방 '시니어쇼츠 1번방' 신규 입장자 3명 감지 (예시).");
-      });
+/* ===== 데모 ===== */
+function runDemo(sfx){
+  txt('err','',sfx);
+  const resultsEl=byPanel('results',sfx);
+  if(resultsEl)resultsEl.innerHTML='';
 
-      btnMockFolder.addEventListener("click", () => {
-        appendLog("kakaoLogBody","폴더 선택은 브라우저에서 직접 접근 불가. 이 입력창은 메모용 경로 필드입니다.");
-      });
+  const roster=[
+    {id:1,name:'황현하',phone:'010-1234-5678'},
+    {id:3,name:'김혜영',phone:'010-3456-7890'},
+    {id:4,name:'임규리',phone:'010-1717-1771'},
+    {id:5,name:'김예은',phone:'010-1111-0000'},
+    {id:6,name:'방예진',phone:'010-0000-9999'},
+  ];
+  const rosterSetN=new Set(roster.map(r=>normalizeName(r.name)));
+  const chatText=[
+    '김예은/0000님이 입장하셨습니다',
+    '황현하/5678님이 입장하셨습니다',
+    '방예진/9999님이 입장했습니다',
+    '임규리 1771님이 들어왔습니다',
+    '김혜영/7890님이 입장하셨습니다',
+    '진종범/2514님이 입장하셨습니다',
+    '매드드라이버김지현님이 입장하셨습니다',
+    '세계제일의규리당장찬양님이 나갔습니다.',
+    '송지현예쁘다님을 내보냈습니다.'
+  ].join('\n');
+  const {events,joinedCount,leftCount}=parseChat(chatText);
+  const NAME_ONLY_SENTINEL='__NAMEONLY__';
+  const active=new Map();const leftFinal=new Map();
+  const ensure=(map,key)=>{if(!map.has(key))map.set(key,new Set());return map.get(key);};
+  for(const ev of events){
+    const s=splitNickname(ev.nick);if(!s)continue;
+    const nN=s.name;
+    if(ev.type==='join'){
+      ensure(active,nN).add(s.digits||NAME_ONLY_SENTINEL);
+      const L=leftFinal.get(nN);if(L){L.delete(s.digits||NAME_ONLY_SENTINEL);if(L.size===0)leftFinal.delete(nN);}
+    }else{
+      const A=ensure(active,nN);
+      if(s.digits)A.delete(s.digits);
+      else if(A.size===1&&A.has(NAME_ONLY_SENTINEL))A.delete(NAME_ONLY_SENTINEL);
+      ensure(leftFinal,nN).add(s.digits||NAME_ONLY_SENTINEL);
+    }
+  }
+  const paidRows=[
+    {name:'김예은',phone4:'0000'},
+    {name:'방예진',phone4:'9999'},
+    {name:'황현하',phone4:'5678'},
+    {name:'황현하',phone4:'9999'},
+    {name:'김혜영',phone4:''},
+  ];
+  const paidNameCountN=new Map();
+  for(const r of paidRows){
+    const nN=normalizeName(r.name);
+    paidNameCountN.set(nN,(paidNameCountN.get(nN)||0)+1);
+  }
+  const report=[];
+  for(const r of roster){
+    const nN=normalizeName(r.name);
+    const set=active.get(nN)||new Set();
+    const isActive=set.size>0;
+    const any4=[...set].find(x=>x!==NAME_ONLY_SENTINEL)||'';
+    report.push([String(r.id),r.name,r.phone,isActive?'입장':'미입장',isActive?(any4?`${r.name}/${any4}`:r.name):'',isActive&&!any4?'(번호없음)':'']);
+  }
+  const extra=[];
+  [...active.entries()].sort(([a],[b])=>a.localeCompare(b,'ko')).forEach(([nN,set])=>{
+    if(!rosterSetN.has(nN)){
+      const digits=[...set].filter(x=>x!==NAME_ONLY_SENTINEL);
+      if(digits.length)digits.forEach(d=>extra.push([`${nN}/${d}`]));
+      if(set.has(NAME_ONLY_SENTINEL))extra.push([`${nN}(번호없음)`]);
+    }
+  });
+  const leavers=[];
+  [...leftFinal.entries()].sort(([a],[b])=>a.localeCompare(b,'ko')).forEach(([nN,set])=>{
+    const act=active.get(nN);
+    set.forEach(d=>{if(!act||!act.has(d))leavers.push([d===NAME_ONLY_SENTINEL?`${nN}(번호없음)`:`${nN}/${d}`]);});
+  });
+  const unresolved=[];
+  for(const r of paidRows){
+    const nN=normalizeName(r.name);
+    const set=active.get(nN)||new Set();
+    const isDupInPaid=(paidNameCountN.get(nN)||0)>1;
+    if(!isDupInPaid)continue;
+    const p4=(r.phone4||'').trim();
+    if(p4&&set.has(p4))continue;
+    unresolved.push([r.name,p4?'공유시트 동명이인 + 번호불일치':'공유시트 동명이인 + 입장로그 번호없음']);
+  }
+  const pills=$$('#pills'+sfx+sfx);
+  if(pills){
+    pills.innerHTML='';
+    const mk=(t,c)=>{const s=document.createElement('span');s.className='pill '+c;s.textContent=t;return s;};
+    const attendingCount=roster.filter(r=>(active.get(normalizeName(r.name))||new Set()).size>0).length;
+    pills.appendChild(mk(`입장로그 join ${joinedCount}`,'ok'));
+    pills.appendChild(mk(`퇴장로그 leave ${leftCount}`,'bad'));
+    pills.appendChild(mk(`입장 대상(읽기시트) ${attendingCount}`,'warn'));
+    pills.appendChild(mk('체크만','warn'));
+  }
+  function resTbl(title,headers,rowsArr){
+    if(!resultsEl)return;
+    const wrap=document.createElement('div');wrap.className='card';
+    const h=document.createElement('h3');h.textContent=title;h.style.margin='0 0 8px';wrap.appendChild(h);
+    const t=document.createElement('table');const thead=document.createElement('thead');const trh=document.createElement('tr');
+    headers.forEach(x=>{const th=document.createElement('th');th.textContent=x;trh.appendChild(th);});
+    thead.appendChild(trh);t.appendChild(thead);
+    const tb=document.createElement('tbody');
+    (rowsArr||[]).forEach(r=>{const tr=document.createElement('tr');(r||[]).forEach(c=>{const td=document.createElement('td');td.textContent=(c==null?'':String(c));tr.appendChild(td);});tb.appendChild(tr);});
+    t.appendChild(tb);wrap.appendChild(t);resultsEl.appendChild(wrap);
+  }
+  resTbl('명단기준 입장자(데모)',['no','name','phone','status','matched_id','notes'],report);
+  resTbl('명단 외 입장자(데모)',['name/last4 or (번호없음)'],extra);
+  resTbl('퇴장자 명단(데모)',['name/last4 or (번호없음)'],leavers);
+  resTbl('미확인 목록(데모)',['name','reason'],unresolved);
+}
 
-      const STORAGE_KEY = "ca_kakao_profile_last";
-      btnSaveProfile.addEventListener("click", () => {
-        const name = profileNameInput.value.trim() || "기본 프로필";
-        const data = {
-          name,
-          folderPath: folderInput.value,
-          rooms: roomsInput.value,
-          savedAt: new Date().toISOString()
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        appendLog("kakaoLogBody",`설정 프로필 '${name}' 저장 완료.`);
-      });
+/* ===== 초기화 ===== */
+window.addEventListener('load',()=>{if(window.google?.accounts?.oauth2)initAuth();});
+document.addEventListener('DOMContentLoaded',()=>{
+  on('gsLoginBtn','click',requestAccess);
+  on('gsLogoutBtn','click',revokeAccess);
 
-      btnLoadLast.addEventListener("click", () => {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(!raw){
-          appendLog("kakaoLogBody","저장된 설정 프로필이 없습니다.");
-          return;
-        }
-        try{
-          const data = JSON.parse(raw);
-          profileNameInput.value = data.name || "";
-          folderInput.value = data.folderPath || "";
-          roomsInput.value = data.rooms || "";
-          appendLog("kakaoLogBody",`설정 프로필 '${data.name || "이름 없음"}' 불러옴.`);
-        }catch(e){
-          appendLog("kakaoLogBody","설정 프로필 파싱 오류. localStorage를 한번 지우는 것을 권장.");
-        }
-      });
+  // 기능 버튼: 일단 입장자 체크만 활성
+  const btnEntrant=$$('featureBtnEntrant');
+  if(btnEntrant){
+    btnEntrant.addEventListener('click',()=>{
+      showFeatureSection('entrant');
+    });
+  }
 
-      // 초기 로드 시 마지막 프로필 자동 반영은 선택적. 필요하면 아래 주석 해제.
-      // btnLoadLast.click();
-    })();
+  const overlay=$$('adminOverlay'),drawer=$$('adminDrawer');
+  const openAdmin=()=>{if(overlay&&drawer){show(overlay);show(drawer);renderAdmList();}};
+  const closeAdmin=()=>{if(overlay&&drawer){hide(overlay);hide(drawer);}};
+  on('settingsBtn','click',openAdmin);
+  on('closeAdmin','click',closeAdmin);
+  if(overlay)overlay.addEventListener('click',closeAdmin);
 
-    // ========= TAB2: 챗봇 데이터 링크 관리 =========
-    (function initChatbotLinks(){
-      const nameInput = document.getElementById("chatbotLinkName");
-      const urlInput = document.getElementById("chatbotLinkUrl");
-      const btnAdd = document.getElementById("btnChatbotAddLink");
-      const listContainer = document.getElementById("chatbotLinkList");
-      const STORAGE_KEY = "ca_chatbot_links";
+  on('admAdd','click',admAdd);
+  on('admClearAll','click',()=>{if(confirm('모든 연결을 삭제할까요?')){clearPacks();renderAdmList();populatePacks('A');populatePacks('B');}});
 
-      function load(){
-        listContainer.innerHTML = "";
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(!raw){
-          listContainer.innerHTML = '<div class="help-text">등록된 링크가 없습니다.</div>';
-          return;
-        }
-        let links;
-        try{
-          links = JSON.parse(raw) || [];
-        }catch(e){
-          listContainer.innerHTML = '<div class="help-text">링크 데이터를 불러오는 중 오류가 발생했습니다.</div>';
-          return;
-        }
-        if(!links.length){
-          listContainer.innerHTML = '<div class="help-text">등록된 링크가 없습니다.</div>';
-          return;
-        }
-        links.forEach((item, idx) => {
-          const div = document.createElement("div");
-          div.className = "template-item";
-          const title = document.createElement("div");
-          title.className = "template-title";
-          const left = document.createElement("div");
-          left.textContent = item.name || "(이름 없음)";
-          const right = document.createElement("div");
-          const openBtn = document.createElement("button");
-          openBtn.className = "btn btn-primary btn-sm";
-          openBtn.type = "button";
-          openBtn.textContent = "열기";
-          openBtn.addEventListener("click", () => {
-            if(item.url) window.open(item.url,"_blank");
-          });
-          const delBtn = document.createElement("button");
-          delBtn.className = "btn btn-ghost btn-sm";
-          delBtn.type = "button";
-          delBtn.textContent = "삭제";
-          delBtn.addEventListener("click", () => {
-            links.splice(idx,1);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
-            load();
-          });
-          right.appendChild(openBtn);
-          right.appendChild(delBtn);
-          title.appendChild(left);
-          title.appendChild(right);
+  // Panel A
+  on('sheetPackSelect','change',()=>onPackChanged('A'),'A');
+  on('refreshMeta','click',()=>refreshMeta('A'),'A');
+  on('runBtn','click',()=>runMain('A'),'A');
+  on('demoBtn','click',()=>runDemo('A'),'A');
+  on('dirPick','click',()=>pickDriveFolder('A'),'A');
+  on('dirRefresh','click',()=>refreshDriveList('A'),'A');
 
-          const meta = document.createElement("div");
-          meta.className = "template-meta";
-          meta.textContent = item.url || "";
+  // Panel B
+  on('sheetPackSelect','change',()=>onPackChanged('B'),'B');
+  on('refreshMeta','click',()=>refreshMeta('B'),'B');
+  on('runBtn','click',()=>runMain('B'),'B');
+  on('demoBtn','click',()=>runDemo('B'),'B');
+  on('dirPick','click',()=>pickDriveFolder('B'),'B');
+  on('dirRefresh','click',()=>refreshDriveList('B'),'B');
 
-          div.appendChild(title);
-          div.appendChild(meta);
-          listContainer.appendChild(div);
-        });
-      }
+  populatePacks('A');
+  populatePacks('B');
+  refreshDriveList('A');
+  refreshDriveList('B');
 
-      btnAdd.addEventListener("click", () => {
-        const name = nameInput.value.trim();
-        const url = urlInput.value.trim();
-        if(!name || !url){
-          alert("이름과 URL을 모두 입력해주세요.");
-          return;
-        }
-        let links = [];
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(raw){
-          try{links = JSON.parse(raw) || [];}catch(e){}
-        }
-        links.push({
-          name,
-          url,
-          createdAt: new Date().toISOString()
-        });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
-        nameInput.value = "";
-        urlInput.value = "";
-        load();
-      });
-
-      load();
-    })();
-
-    // ========= TAB3: 세일즈 멘트 GPTs =========
-    (function initSalesGPT(){
-      const apiKeyInput = document.getElementById("openaiApiKey");
-      const btnToggleKey = document.getElementById("btnToggleApiKey");
-      const systemPromptInput = document.getElementById("salesSystemPrompt");
-      const userPromptInput = document.getElementById("salesUserPrompt");
-      const btnGenerate = document.getElementById("btnGenerateSales");
-      const statusText = document.getElementById("salesStatusText");
-      const resultArea = document.getElementById("salesResult");
-      const templateTitleInput = document.getElementById("salesTemplateTitle");
-      const btnSaveTemplate = document.getElementById("btnSaveSalesTemplate");
-      const templateList = document.getElementById("salesTemplateList");
-      const STORAGE_KEY = "ca_sales_templates";
-
-      btnToggleKey.addEventListener("click", () => {
-        const type = apiKeyInput.getAttribute("type");
-        apiKeyInput.setAttribute("type", type === "password" ? "text" : "password");
-        btnToggleKey.textContent = type === "password" ? "숨기기" : "보기";
-      });
-
-      async function callOpenAI(apiKey, systemPrompt, userPrompt){
-        const endpoint = "https://api.openai.com/v1/chat/completions";
-        const body = {
-          model: "gpt-4.1-mini",
-          messages:[
-            { role:"system", content: systemPrompt || "You are a helpful assistant." },
-            { role:"user", content: userPrompt }
-          ],
-          temperature:0.7
-        };
-        const res = await fetch(endpoint, {
-          method:"POST",
-          headers:{
-            "Content-Type":"application/json",
-            "Authorization":"Bearer " + apiKey
-          },
-          body:JSON.stringify(body)
-        });
-        if(!res.ok){
-          const text = await res.text();
-          throw new Error("API 오류: " + text);
-        }
-        const data = await res.json();
-        const content = data.choices?.[0]?.message?.content || "";
-        return content;
-      }
-
-      btnGenerate.addEventListener("click", async () => {
-        const key = apiKeyInput.value.trim();
-        const sys = systemPromptInput.value.trim();
-        const usr = userPromptInput.value.trim();
-        if(!key){
-          alert("OpenAI API 키를 입력해주세요.");
-          return;
-        }
-        if(!usr){
-          alert("요청 내용을 입력해주세요.");
-          return;
-        }
-        statusText.textContent = "생성 중...";
-        statusText.style.color = "#e5e7eb";
-        btnGenerate.disabled = true;
-        btnGenerate.textContent = "생성 중...";
-        resultArea.value = "";
-        try{
-          const content = await callOpenAI(key, sys, usr);
-          resultArea.value = content;
-          statusText.textContent = "완료";
-          statusText.style.color = "#22c55e";
-        }catch(e){
-          console.error(e);
-          statusText.textContent = "오류 발생: " + e.message;
-          statusText.style.color = "#ef4444";
-        }finally{
-          btnGenerate.disabled = false;
-          btnGenerate.textContent = "🧠 세일즈 멘트 생성";
-        }
-      });
-
-      function loadTemplates(){
-        templateList.innerHTML = "";
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(!raw){
-          templateList.innerHTML = '<div class="help-text">저장된 템플릿이 없습니다.</div>';
-          return;
-        }
-        let list;
-        try{
-          list = JSON.parse(raw) || [];
-        }catch(e){
-          templateList.innerHTML = '<div class="help-text">템플릿 데이터를 불러오는 중 오류가 발생했습니다.</div>';
-          return;
-        }
-        if(!list.length){
-          templateList.innerHTML = '<div class="help-text">저장된 템플릿이 없습니다.</div>';
-          return;
-        }
-        list.forEach((item, idx) => {
-          const div = document.createElement("div");
-          div.className = "template-item";
-
-          const title = document.createElement("div");
-          title.className = "template-title";
-          const left = document.createElement("div");
-          left.textContent = item.title || "(제목 없음)";
-          const right = document.createElement("div");
-          const copyBtn = document.createElement("button");
-          copyBtn.className = "btn btn-primary btn-sm";
-          copyBtn.type = "button";
-          copyBtn.textContent = "복사";
-          copyBtn.addEventListener("click", () => {
-            navigator.clipboard.writeText(item.content || "").then(() => {
-              alert("클립보드에 복사되었습니다.");
-            }).catch(() => alert("복사에 실패했습니다."));
-          });
-          const delBtn = document.createElement("button");
-          delBtn.className = "btn btn-ghost btn-sm";
-          delBtn.type = "button";
-          delBtn.textContent = "삭제";
-          delBtn.addEventListener("click", () => {
-            list.splice(idx,1);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-            loadTemplates();
-          });
-          right.appendChild(copyBtn);
-          right.appendChild(delBtn);
-          title.appendChild(left);
-          title.appendChild(right);
-
-          const meta = document.createElement("div");
-          meta.className = "template-meta";
-          const date = item.createdAt ? new Date(item.createdAt) : null;
-          meta.textContent = date ? "저장: " + date.toLocaleString() : "";
-
-          const body = document.createElement("div");
-          body.className = "template-body";
-          body.textContent = item.content || "";
-
-          div.appendChild(title);
-          div.appendChild(meta);
-          div.appendChild(body);
-          templateList.appendChild(div);
-        });
-      }
-
-      btnSaveTemplate.addEventListener("click", () => {
-        const title = templateTitleInput.value.trim();
-        const content = resultArea.value.trim();
-        if(!title){
-          alert("템플릿 이름을 입력해주세요.");
-          return;
-        }
-        if(!content){
-          alert("저장할 내용이 없습니다.");
-          return;
-        }
-        let list = [];
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(raw){
-          try{list = JSON.parse(raw) || [];}catch(e){}
-        }
-        list.unshift({
-          title,
-          content,
-          createdAt: new Date().toISOString()
-        });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-        templateTitleInput.value = "";
-        loadTemplates();
-      });
-
-      loadTemplates();
-    })();
-
-    // ========= TAB4: 드라이브 폴더 링크 =========
-    (function initDriveFolders(){
-      const nameInput = document.getElementById("driveFolderName");
-      const urlInput = document.getElementById("driveFolderUrl");
-      const btnAdd = document.getElementById("btnAddDriveFolder");
-      const btnClear = document.getElementById("btnClearDriveFolders");
-      const grid = document.getElementById("driveFolderGrid");
-      const STORAGE_KEY = "ca_drive_folders";
-
-      function load(){
-        grid.innerHTML = "";
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(!raw){
-          grid.innerHTML = '<div class="help-text">등록된 폴더가 없습니다.</div>';
-          return;
-        }
-        let list;
-        try{
-          list = JSON.parse(raw) || [];
-        }catch(e){
-          grid.innerHTML = '<div class="help-text">폴더 데이터를 불러오는 중 오류가 발생했습니다.</div>';
-          return;
-        }
-        if(!list.length){
-          grid.innerHTML = '<div class="help-text">등록된 폴더가 없습니다.</div>';
-          return;
-        }
-        list.forEach((item, idx) => {
-          const card = document.createElement("div");
-          card.className = "folder-card";
-          card.addEventListener("click", (e) => {
-            // 삭제 버튼 클릭은 링크 이동 막기
-            if(e.target.closest(".folder-delete")) return;
-            if(item.url) window.open(item.url,"_blank");
-          });
-
-          const name = document.createElement("div");
-          name.className = "folder-name";
-          const icon = document.createElement("span");
-          icon.className = "icon";
-          icon.textContent = "📁";
-          const text = document.createElement("span");
-          text.textContent = item.name || "(이름 없음)";
-          name.appendChild(icon);
-          name.appendChild(text);
-
-          const url = document.createElement("div");
-          url.className = "folder-url";
-          url.textContent = item.url || "";
-
-          const delBtn = document.createElement("button");
-          delBtn.className = "btn btn-ghost btn-sm folder-delete";
-          delBtn.type = "button";
-          delBtn.textContent = "×";
-          delBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            list.splice(idx,1);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-            load();
-          });
-
-          card.appendChild(name);
-          card.appendChild(url);
-          card.appendChild(delBtn);
-          grid.appendChild(card);
-        });
-      }
-
-      btnAdd.addEventListener("click", () => {
-        const name = nameInput.value.trim();
-        const url = urlInput.value.trim();
-        if(!name || !url){
-          alert("폴더 이름과 링크를 모두 입력해주세요.");
-          return;
-        }
-        let list = [];
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(raw){
-          try{list = JSON.parse(raw) || [];}catch(e){}
-        }
-        list.push({
-          name,
-          url,
-          createdAt: new Date().toISOString()
-        });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-        nameInput.value = "";
-        urlInput.value = "";
-        load();
-      });
-
-      btnClear.addEventListener("click", () => {
-        if(!confirm("등록된 모든 폴더 링크를 삭제할까요?")) return;
-        localStorage.removeItem(STORAGE_KEY);
-        load();
-      });
-
-      load();
-    })();
-
-    // ========= TAB5: 결제자 CSV 정리 =========
-    (function initCsv(){
-      const fileInput = document.getElementById("csvFileInput");
-      const webAppInput = document.getElementById("csvWebAppUrl");
-      const btnDownload = document.getElementById("btnDownloadCsvClean");
-      const btnSend = document.getElementById("btnSendCsvToWebApp");
-      const statusText = document.getElementById("csvStatusText");
-      const previewContainer = document.getElementById("csvPreviewContainer");
-      const previewTable = document.getElementById("csvPreviewTable");
-
-      let parsedCsv = null; // { headers: [], rows: [][] }
-
-      function parseCsv(text){
-        const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
-        if(!lines.length) return { headers: [], rows: [] };
-        const rows = lines.map(line => {
-          // 아주 단순한 CSV 파서 (콤마 기준 분리, 큰따옴표 처리 X)
-          return line.split(",").map(v => v.trim());
-        });
-        const headers = rows[0];
-        const dataRows = rows.slice(1);
-        return { headers, rows:dataRows };
-      }
-
-      function renderPreview(data){
-        const { headers, rows } = data;
-        previewTable.innerHTML = "";
-        if(!headers.length){
-          previewContainer.style.display = "none";
-          return;
-        }
-        const thead = document.createElement("thead");
-        const trHead = document.createElement("tr");
-        headers.forEach(h => {
-          const th = document.createElement("th");
-          th.textContent = h;
-          trHead.appendChild(th);
-        });
-        thead.appendChild(trHead);
-        previewTable.appendChild(thead);
-
-        const tbody = document.createElement("tbody");
-        rows.forEach(row => {
-          const tr = document.createElement("tr");
-          headers.forEach((_, idx) => {
-            const td = document.createElement("td");
-            td.textContent = row[idx] || "";
-            tr.appendChild(td);
-          });
-          tbody.appendChild(tr);
-        });
-        previewTable.appendChild(tbody);
-        previewContainer.style.display = "block";
-      }
-
-      fileInput.addEventListener("change", () => {
-        const file = fileInput.files?.[0];
-        if(!file){
-          statusText.textContent = "CSV 미로딩";
-          parsedCsv = null;
-          previewContainer.style.display = "none";
-          return;
-        }
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          try{
-            const text = e.target.result;
-            const data = parseCsv(text);
-            parsedCsv = data;
-            renderPreview(data);
-            statusText.textContent = `불러옴: ${file.name} (행 ${data.rows.length}개)`;
-          }catch(err){
-            console.error(err);
-            statusText.textContent = "CSV 파싱 오류";
-            parsedCsv = null;
-            previewContainer.style.display = "none";
-          }
-        };
-        reader.readAsText(file, "utf-8");
-      });
-
-      btnDownload.addEventListener("click", () => {
-        if(!parsedCsv){
-          alert("먼저 CSV 파일을 업로드해주세요.");
-          return;
-        }
-        const { headers, rows } = parsedCsv;
-        const lines = [];
-        lines.push(headers.join(","));
-        rows.forEach(row => {
-          const line = headers.map((_, idx) => row[idx] || "");
-          lines.push(line.join(","));
-        });
-        const blob = new Blob([lines.join("\n")], { type:"text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "cleaned.csv";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      });
-
-      btnSend.addEventListener("click", async () => {
-        if(!parsedCsv){
-          alert("먼저 CSV 파일을 업로드해주세요.");
-          return;
-        }
-        const url = webAppInput.value.trim();
-        if(!url){
-          alert("Apps Script WebApp URL을 입력해주세요.");
-          return;
-        }
-        statusText.textContent = "WebApp으로 전송 중...";
-        statusText.style.color = "#e5e7eb";
-        try{
-          const payload = {
-            headers: parsedCsv.headers,
-            rows: parsedCsv.rows
-          };
-          const res = await fetch(url, {
-            method:"POST",
-            headers:{ "Content-Type":"application/json" },
-            body:JSON.stringify(payload)
-          });
-          if(!res.ok){
-            const text = await res.text();
-            throw new Error(text);
-          }
-          const data = await res.text();
-          statusText.textContent = "전송 완료: " + data;
-          statusText.style.color = "#22c55e";
-        }catch(e){
-          console.error(e);
-          statusText.textContent = "전송 실패: " + e.message;
-          statusText.style.color = "#ef4444";
-        }
-      });
-    })();
-  </script>
+  // 처음엔 기능 섹션 모두 숨김
+  setFeatureVisibility(false);
+});
+</script>
 </body>
 </html>
