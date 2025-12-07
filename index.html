@@ -408,6 +408,32 @@
         </section>
       </div>
     </section>
+    <style>
+  :root{
+    /* ... 기존 변수들 ... */
+  }
+
+  /* ... 기존 스타일들 ... */
+
+  /* ✅ 체크박스 크기/정렬 줄이기 */
+  input[type="checkbox"]{
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    vertical-align: middle;
+  }
+
+  /* A/B 패널의 체크박스만 줄이고 싶으면 이렇게 써도 됨
+  #previewOnlyA,
+  #previewOnlyB{
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    vertical-align: middle;
+  }
+  */
+</style>
+
 
     <!-- 추가 기능 탭 : 집계 리포트 -->
     <section id="tab-extra" class="tab-screen">
