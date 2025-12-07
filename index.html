@@ -303,7 +303,7 @@
         🧾 <span>기본 체크</span>
       </button>
       <button class="subtab-btn" data-tab="extra">
-        🧩 <span>추가 기능</span> <span class="badge">예정</span>
+        🧩 <span>추가 기능</span>
       </button>
       <button class="subtab-btn" data-tab="options">
         ⚙ <span>옵션</span>
@@ -419,16 +419,20 @@
       </div>
     </section>
 
-    <!-- 추가 기능 탭 (지금은 안내용 카드) -->
+    <!-- 추가 기능 탭 : 집계 리포트 -->
     <section id="tab-extra" class="tab-screen">
       <div class="card">
-        <h3 style="margin:0 0 8px">추가 기능 (예정)</h3>
-        <p class="hint" style="margin:0">
-          기본 체크에서 계산된 결과를 기반으로, 입장/미입장/명단 외 입장자 등을 집계하고
-          리포트 형태로 뽑아내는 기능들을 여기에 모을 예정입니다.<br/>
-          (예: 방별 입장률, 명단 외 입장자 리스트 CSV 내보내기 등)
+        <h3 style="margin:0 0 8px">추가 리포트</h3>
+        <p class="hint" style="margin:0 0 8px">
+          기본 체크 탭에서 A나 B 패널을 실행하면, 그 결과가 이곳에 저장됩니다.<br/>
+          아래 버튼을 눌러 A/B 패널의 마지막 실행 결과를 합산한 리포트를 확인하세요.
         </p>
+        <div class="row" style="margin-top:4px">
+          <button id="extraRefresh" class="btn acc" type="button">마지막 실행 결과 집계하기</button>
+          <span id="extraHint" class="hint"></span>
+        </div>
       </div>
+      <div id="extraResults" style="display:grid;gap:16px"></div>
     </section>
 
     <!-- 옵션 탭 : 관리자 + 동작 설정 -->
@@ -506,7 +510,7 @@
     </section>
   </section>
 
-  <!-- ===== 화면 4/5: 아직은 안내 카드만 ===== -->
+  <!-- ===== 화면 4/5: 안내만 ===== -->
   <section id="screen-students" class="screen">
     <button class="btn back-btn" type="button" id="backFromStudents">← 대시보드로 돌아가기</button>
     <div class="card">
@@ -629,6 +633,9 @@ function readOptionsFromUI(){
   OPTIONS.statusLabel=st||DEFAULT_OPTIONS.statusLabel;
 }
 
+/* ===== 추가 리포트용 마지막 실행 결과 저장 ===== */
+let lastRun={A:null,B:null};
+
 /* ===== OAuth ===== */
 let accessToken=null,tokenClient=null;
 /* ✅ 여기에 본인 OAuth 클라이언트 ID 넣기 */
@@ -637,7 +644,6 @@ const CLIENT_ID="18228268359-iifm4ck3j9kqj74eh1p90tco1k2mbpi0.apps.googleusercon
 function handleLoggedIn(){
   txt('authState','로그인 완료');
   txt('authErr','');
-  // 로그인 후 메인 화면으로
   switchScreen('main');
   // 기본 드라이브 폴더 A 패널에 연결
   driveFolderId.A='1OIZGro5_CVmlsNiOuvtzbnHDukPJIcQJ';
@@ -1119,6 +1125,19 @@ async function runMain(sfx){
     );
     resTbl('미확인 목록(공유 시트 동명이인/번호 문제)',['name','reason'],unresolved);
 
+    // 🔹 추가 기능 탭에서 사용할 마지막 실행 결과 저장
+    lastRun[sfx]={
+      joinedCount,
+      leftCount,
+      rosterTotal:rosterNames.length,
+      attendingCount,
+      missingCount,
+      extra,
+      leavers,
+      unresolved,
+      ts:Date.now()
+    };
+
   }catch(e){
     txt('err','오류: '+(e?.message||e),sfx);
     console.error(e);
@@ -1248,6 +1267,87 @@ function runDemo(sfx){
   resTbl('명단 외 입장자(데모)',['name/last4 or (번호없음)'],extra);
   resTbl('퇴장자 명단(데모)',['name/last4 or (번호없음)'],leavers);
   resTbl('미확인 목록(데모)',['name','reason'],unresolved);
+
+  // 데모 실행도 lastRun에 저장 (패널별 집계용)
+  lastRun[sfx]={
+    joinedCount,
+    leftCount,
+    rosterTotal:roster.length,
+    attendingCount,
+    missingCount,
+    extra,
+    leavers,
+    unresolved,
+    ts:Date.now()
+  };
+}
+
+/* ===== 추가 리포트 집계 ===== */
+function updateExtraReport(){
+  const hintEl=$$('extraHint');
+  const out=$$('extraResults');
+  if(!out)return;
+  out.innerHTML='';
+
+  const a=lastRun.A, b=lastRun.B;
+  if(!a && !b){
+    if(hintEl)hintEl.textContent='먼저 기본 체크 탭에서 A 또는 B 패널을 한 번 이상 실행해 주세요.';
+    return;
+  }
+  if(hintEl)hintEl.textContent='마지막 실행된 A/B 패널 결과를 합산해 집계했습니다.';
+
+  const totalRoster=(a?.rosterTotal||0)+(b?.rosterTotal||0);
+  const totalAttend=(a?.attendingCount||0)+(b?.attendingCount||0);
+  const totalMissing=(a?.missingCount||0)+(b?.missingCount||0);
+  const totalJoined=(a?.joinedCount||0)+(b?.joinedCount||0);
+  const totalLeft=(a?.leftCount||0)+(b?.leftCount||0);
+  const totalExtra=(a?.extra?.length||0)+(b?.extra?.length||0);
+  const totalLeavers=(a?.leavers?.length||0)+(b?.leavers?.length||0);
+  const totalUnres=(a?.unresolved?.length||0)+(b?.unresolved?.length||0);
+
+  function resTbl(title,headers,rowsArr){
+    const wrap=document.createElement('div');wrap.className='card';
+    const h=document.createElement('h3');h.textContent=title;h.style.margin='0 0 8px';wrap.appendChild(h);
+    const t=document.createElement('table');const thead=document.createElement('thead');const trh=document.createElement('tr');
+    headers.forEach(x=>{const th=document.createElement('th');th.textContent=x;trh.appendChild(th);});
+    thead.appendChild(trh);t.appendChild(thead);
+    const tb=document.createElement('tbody');
+    (rowsArr||[]).forEach(r=>{const tr=document.createElement('tr');(r||[]).forEach(c=>{const td=document.createElement('td');td.textContent=(c==null?'':String(c));tr.appendChild(td);});tb.appendChild(tr);});
+    t.appendChild(tb);wrap.appendChild(t);out.appendChild(wrap);
+  }
+
+  const sumRows=[
+    ['총 대상 수',totalRoster],
+    [OPTIONS.statusLabel,totalAttend],
+    ['미입장',totalMissing],
+    ['퇴장자(최종)',totalLeavers],
+    ['명단 외 입장자',totalExtra],
+    ['미확인(동명이인/번호 문제)',totalUnres],
+    ['입장로그 join 합계',totalJoined],
+    ['퇴장로그 leave 합계',totalLeft]
+  ];
+  resTbl('전체 패널 요약',['항목','값'],sumRows);
+
+  const extrasCombined=[];
+  if(a?.extra) a.extra.forEach(r=>extrasCombined.push(['A',r[0]]));
+  if(b?.extra) b.extra.forEach(r=>extrasCombined.push(['B',r[0]]));
+  if(extrasCombined.length){
+    resTbl('명단 외 입장자 (A/B 합산)',['패널','name/last4 or (번호없음)'],extrasCombined);
+  }
+
+  const leaversCombined=[];
+  if(a?.leavers) a.leavers.forEach(r=>leaversCombined.push(['A',r[0]]));
+  if(b?.leavers) b.leavers.forEach(r=>leaversCombined.push(['B',r[0]]));
+  if(leaversCombined.length){
+    resTbl('퇴장자 명단 (A/B 합산)',['패널','name/last4 or (번호없음)'],leaversCombined);
+  }
+
+  const unresolvedCombined=[];
+  if(a?.unresolved) a.unresolved.forEach(r=>unresolvedCombined.push(['A',r[0],r[1]]));
+  if(b?.unresolved) b.unresolved.forEach(r=>unresolvedCombined.push(['B',r[0],r[1]]));
+  if(unresolvedCombined.length){
+    resTbl('미확인 목록 (A/B 합산)',['패널','name','reason'],unresolvedCombined);
+  }
 }
 
 /* ===== 초기화 ===== */
@@ -1305,7 +1405,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   on('dirPick','click',()=>pickDriveFolder('B'),'B');
   on('dirRefresh','click',()=>refreshDriveList('B'),'B');
 
-  // 초기 스프레드시트 상태 (로컬 저장된 것만)
+  // 추가 리포트 버튼
+  on('extraRefresh','click',updateExtraReport);
+
+  // 초기 스프레드시트 상태
   renderAdmList();
   populatePacks('A');
   populatePacks('B');
