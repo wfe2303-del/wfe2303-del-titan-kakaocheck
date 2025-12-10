@@ -3,10 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>클래스어라운드 · 드라이브 폴더 모음</title>
+  <title>클어 운영 드라이브</title>
 
-  <!-- Tailwind (필요 없으면 제거 가능) -->
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Identity Services (로그인용) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
     body { background:#f8fafc; }
@@ -18,17 +20,34 @@
 <body class="min-h-screen text-slate-900">
   <div class="max-w-6xl mx-auto px-4 py-6">
     <!-- 헤더 -->
-    <header class="flex items-center justify-between mb-6">
-      <div>
-        <h1 class="text-2xl font-bold">클래스어라운드 운영 대시보드</h1>
-        <p class="text-sm text-slate-500">
-          카카오톡 입장자 체크 · 수강생 시트 업데이트 · 드라이브 자료 모음
-        </p>
+    <header class="flex items-center justify-between mb-6 gap-4">
+      <div class="flex items-center gap-3 min-w-0">
+        <!-- 클래스어라운드 로고 박스 -->
+        <div class="flex items-center justify-center w-11 h-11 rounded-2xl bg-sky-600 text-white text-[10px] leading-tight font-extrabold shadow-sm">
+          <div class="text-center">
+            <div>CLASS</div>
+            <div>AROUND</div>
+          </div>
+        </div>
+        <div class="min-w-0">
+          <p class="text-[11px] text-slate-400 font-semibold">클래스어라운드</p>
+          <h1 class="text-xl font-bold truncate">클어 운영 드라이브</h1>
+          <p class="text-[11px] text-slate-500 truncate">
+            카카오톡 입장자 체크 · 수강생 시트 · 드라이브 자료 모음
+          </p>
+        </div>
       </div>
-      <div class="text-right text-xs text-slate-500 space-y-1">
-        <div id="proxy-status">🛰 Apps Script 프록시 사용 중</div>
-        <p class="text-[11px] text-slate-400">
-          폴더는 비공개 유지 · 이 페이지는 파일 제목만 표시
+
+      <div id="login-box" class="text-right text-xs text-slate-500 space-y-1">
+        <div class="flex items-center gap-2 justify-end">
+          <span id="login-status" class="text-[11px] text-slate-500">로그인 필요</span>
+          <button id="btn-login"
+                  class="px-3 py-1 rounded-full border border-slate-300 text-xs font-medium hover:bg-slate-100">
+            Google 로그인
+          </button>
+        </div>
+        <p class="text-[11px] text-slate-400" id="proxy-status">
+          🛰 Apps Script 프록시 사용 중 · 폴더는 비공개 유지
         </p>
       </div>
     </header>
@@ -53,21 +72,33 @@
 
       <!-- 오른쪽: 파일 미리보기 -->
       <main class="bg-white rounded-2xl shadow border border-slate-100 p-4 flex flex-col">
-        <div class="flex items-center justify-between mb-3">
-          <div>
+        <div class="flex items-center justify-between mb-3 gap-3">
+          <div class="min-w-0">
             <p class="text-xs text-slate-400">DRIVE FOLDER VIEW</p>
-            <p id="current-folder-title" class="text-base font-semibold mt-1">
+            <p id="current-folder-title" class="text-base font-semibold mt-1 truncate">
               폴더를 선택해주세요
             </p>
-            <p id="current-folder-desc" class="text-xs text-slate-500">
+            <p id="current-folder-desc" class="text-xs text-slate-500 truncate">
               좌측에서 폴더를 클릭하면 이 영역에 파일 목록이 표시됩니다.
             </p>
           </div>
-          <button id="btn-open-newtab"
-                  class="px-3 py-1 rounded-full border border-slate-200 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                  disabled>
-            새 탭에서 폴더 열기
-          </button>
+          <div class="flex items-center gap-2">
+            <!-- 검색 인풋 -->
+            <div class="relative">
+              <input
+                id="search-input"
+                type="text"
+                placeholder="파일명 검색"
+                class="pl-7 pr-2 py-1.5 text-xs border border-slate-200 rounded-full bg-slate-50 focus:outline-none focus:ring-1 focus:ring-sky-400 focus:bg-white min-w-[160px]"
+              />
+              <span class="absolute left-2 top-1.5 text-[13px] text-slate-400">🔍</span>
+            </div>
+            <button id="btn-open-newtab"
+                    class="px-3 py-1 rounded-full border border-slate-200 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    disabled>
+              새 탭에서 폴더 열기
+            </button>
+          </div>
         </div>
 
         <div id="drive-preview"
@@ -85,14 +116,11 @@
 
   <script>
     // ==============================
-    // 1. Apps Script 웹앱 URL
+    // 1. 설정
     // ==============================
-    const SCRIPT_URL = 'https://script.google.com/a/macros/classaround.co.kr/s/AKfycby0ixfDg41UDot43MlveRJGP5br-7wFAVvKjxVjPDEE_00JlpSH3sjmUHewuvgnRcxQ/exec'; 
-    // 예: 'https://script.google.com/macros/s/AKfycbXXXX/exec'
+    const SCRIPT_URL = 'https://script.google.com/a/macros/classaround.co.kr/s/AKfycby0ixfDg41UDot43MlveRJGP5br-7wFAVvKjxVjPDEE_00JlpSH3sjmUHewuvgnRcxQ/exec';
+    const CLIENT_ID = '18228268359-iifm4ck3j9kqj74eh1p90tco1k2mbpi0.apps.googleusercontent.com';
 
-    // ==============================
-    // 2. 폴더 목록 (네가 준 5개)
-    // ==============================
     const FOLDERS = [
       {
         key: 'card',
@@ -126,7 +154,81 @@
       }
     ];
 
-    let currentFolder = null;
+    // 상태
+    let currentFolder = null;     // {id, name, desc}
+    let folderStack = [];         // 탐색 경로 [{id,name,desc}, ...]
+    let currentFiles = [];        // 현재 폴더의 파일/폴더 전체
+    let currentSearch = '';       // 검색어
+
+    let authTokenClient = null;
+    let userInfo = null;          // {email,name,picture}
+
+    // ==============================
+    // 2. 로그인
+    // ==============================
+    function setupAuth() {
+      if (!window.google || !google.accounts || !google.accounts.oauth2) return;
+
+      authTokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: 'openid email profile',
+        callback: async (tokenResponse) => {
+          try {
+            const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+              headers: { Authorization: 'Bearer ' + tokenResponse.access_token }
+            });
+            const info = await res.json();
+            userInfo = {
+              email: info.email,
+              name: info.name,
+              picture: info.picture
+            };
+          } catch (e) {
+            console.error('userinfo error', e);
+            userInfo = null;
+          }
+          updateLoginUI();
+        }
+      });
+    }
+
+    function handleLoginClick() {
+      if (!authTokenClient) setupAuth();
+      if (!authTokenClient) {
+        alert('Google 로그인 초기화 중입니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      authTokenClient.requestAccessToken({ prompt: '' });
+    }
+
+    function handleLogout() {
+      userInfo = null;
+      updateLoginUI();
+    }
+
+    function updateLoginUI() {
+      const statusEl = document.getElementById('login-status');
+      const btnEl = document.getElementById('btn-login');
+      if (!statusEl || !btnEl) return;
+
+      if (userInfo) {
+        statusEl.textContent = userInfo.email || '로그인 완료';
+        btnEl.textContent = '로그아웃';
+        btnEl.onclick = handleLogout;
+      } else {
+        statusEl.textContent = '로그인 필요';
+        btnEl.textContent = 'Google 로그인';
+        btnEl.onclick = handleLoginClick;
+      }
+    }
+
+    function requireLogin() {
+      if (!userInfo) {
+        alert('먼저 오른쪽 상단에서 Google 로그인을 해주세요.');
+        return false;
+      }
+      return true;
+    }
 
     // ==============================
     // 3. 폴더 버튼 렌더링
@@ -147,33 +249,98 @@
           </div>
           <span class="text-[11px] px-2 py-0.5 rounded-full bg-white border border-slate-200">열기</span>
         `;
-        btn.onclick = () => onFolderClick(folder);
+        btn.onclick = () => onRootFolderClick(folder);
         listEl.appendChild(btn);
       });
     }
 
     // ==============================
-    // 4. 폴더 클릭 → Apps Script로 파일 목록 요청
+    // 4. 폴더 탐색 (루트/하위)
     // ==============================
-    function onFolderClick(folder) {
-      currentFolder = folder;
+    function onRootFolderClick(folder) {
+      if (!requireLogin()) return;
 
-      document.getElementById('current-folder-title').textContent = folder.name;
-      document.getElementById('current-folder-desc').textContent = folder.desc;
+      currentFolder = { id: folder.id, name: folder.name, desc: folder.desc };
+      folderStack = [currentFolder];
+      currentFiles = [];
+      currentSearch = '';
+      const searchInput = document.getElementById('search-input');
+      if (searchInput) searchInput.value = '';
 
-      const openBtn = document.getElementById('btn-open-newtab');
-      openBtn.disabled = false;
-      openBtn.onclick = () => {
+      updateFolderHeader();
+      updateOpenNewTabButton();
+      loadCurrentFolder();
+    }
+
+    function enterSubfolder(file) {
+      if (!file || !file.id) return;
+      currentFolder = { id: file.id, name: file.name, desc: currentFolder.desc };
+      folderStack.push(currentFolder);
+      currentFiles = [];
+      currentSearch = '';
+      const searchInput = document.getElementById('search-input');
+      if (searchInput) searchInput.value = '';
+
+      updateFolderHeader();
+      updateOpenNewTabButton();
+      loadCurrentFolder();
+    }
+
+    function goUpFolder() {
+      if (folderStack.length <= 1) return;
+      folderStack.pop();
+      currentFolder = folderStack[folderStack.length - 1];
+      currentFiles = [];
+      currentSearch = '';
+      const searchInput = document.getElementById('search-input');
+      if (searchInput) searchInput.value = '';
+
+      updateFolderHeader();
+      updateOpenNewTabButton();
+      loadCurrentFolder();
+    }
+
+    function updateFolderHeader() {
+      const titleEl = document.getElementById('current-folder-title');
+      const descEl = document.getElementById('current-folder-desc');
+
+      if (!currentFolder) {
+        titleEl.textContent = '폴더를 선택해주세요';
+        descEl.textContent = '좌측에서 폴더를 클릭하면 이 영역에 파일 목록이 표시됩니다.';
+        return;
+      }
+
+      const pathNames = folderStack.map(f => f.name);
+      titleEl.textContent = pathNames.join(' / ');
+      descEl.textContent = currentFolder.desc || '';
+    }
+
+    function updateOpenNewTabButton() {
+      const btn = document.getElementById('btn-open-newtab');
+      if (!btn) return;
+      if (!currentFolder) {
+        btn.disabled = true;
+        btn.onclick = null;
+        return;
+      }
+      btn.disabled = false;
+      btn.onclick = () => {
         window.open(
-          `https://drive.google.com/drive/folders/${folder.id}`,
+          `https://drive.google.com/drive/folders/${currentFolder.id}`,
           '_blank'
         );
       };
-
-      listFilesInFolder(folder);
     }
 
-    async function listFilesInFolder(folder) {
+    function loadCurrentFolder() {
+      if (!currentFolder) return;
+      listFilesInFolder(currentFolder.id);
+    }
+
+    // ==============================
+    // 5. Apps Script 호출
+    // ==============================
+    async function listFilesInFolder(folderId) {
       const previewEl = document.getElementById('drive-preview');
       previewEl.innerHTML = `
         <div class="p-4 text-sm text-slate-500">
@@ -183,7 +350,7 @@
 
       try {
         const res = await fetch(
-          `${SCRIPT_URL}?folderId=${encodeURIComponent(folder.id)}`
+          `${SCRIPT_URL}?folderId=${encodeURIComponent(folderId)}`
         );
         const data = await res.json();
 
@@ -200,9 +367,8 @@
           return;
         }
 
-        const files = data.files || [];
-
-        if (!files.length) {
+        currentFiles = data.files || [];
+        if (!currentFiles.length) {
           previewEl.innerHTML = `
             <div class="p-4 text-sm text-slate-500">
               이 폴더에 표시할 파일이 없습니다.
@@ -211,7 +377,8 @@
           return;
         }
 
-        renderFileList(previewEl, files);
+        currentSearch = '';
+        updateFileList();
       } catch (err) {
         console.error(err);
         previewEl.innerHTML = `
@@ -223,46 +390,131 @@
     }
 
     // ==============================
-    // 5. 파일 리스트 렌더링
+    // 6. 검색 + 리스트 렌더링
     // ==============================
-    function renderFileList(containerEl, files) {
-      const rows = files
-        .map(file => {
-          const date = file.modifiedTime
-            ? new Date(file.modifiedTime).toLocaleString()
-            : '-';
-          const sizeStr = file.size ? formatBytes(Number(file.size)) : '-';
+    function updateFileList() {
+      const previewEl = document.getElementById('drive-preview');
+      if (!previewEl) return;
 
-          return `
-            <button
-              class="file-row w-full flex items-center text-left text-sm px-3 py-2 border-b border-slate-100 last:border-b-0"
-              onclick="window.open('${file.url}', '_blank')"
-            >
-              <div class="flex-1 min-w-0">
-                <div class="truncate font-medium text-slate-800">
-                  ${escapeHtml(file.name)}
-                </div>
-                <div class="text-[11px] text-slate-500 mt-0.5">
-                  ${file.mimeType} · 수정: ${date}
-                </div>
-              </div>
-              <div class="text-[11px] text-slate-500 ml-3 whitespace-nowrap">
-                ${sizeStr}
-              </div>
-            </button>
-          `;
-        })
-        .join('');
+      if (!currentFiles.length) {
+        previewEl.innerHTML = `
+          <div class="p-4 text-sm text-slate-500">
+            이 폴더에 표시할 파일이 없습니다.
+          </div>
+        `;
+        return;
+      }
 
-      containerEl.innerHTML = `
-        <div
-          class="text-[11px] text-slate-500 px-3 py-2 border-b border-slate-100 bg-slate-50/60 sticky top-0 z-10 flex justify-between"
-        >
-          <span>총 ${files.length}개 파일</span>
-          <span>클릭 시 새 탭에서 열립니다.</span>
-        </div>
-        <div>${rows}</div>
-      `;
+      const keyword = currentSearch.trim().toLowerCase();
+      const filtered = !keyword
+        ? currentFiles
+        : currentFiles.filter(f =>
+            (f.name || '').toLowerCase().includes(keyword)
+          );
+
+      renderFileList(previewEl, filtered, currentFiles.length);
+    }
+
+    function renderFileList(containerEl, files, totalCount) {
+      containerEl.innerHTML = '';
+
+      const header = document.createElement('div');
+      header.className =
+        'text-[11px] text-slate-500 px-3 py-2 border-b border-slate-100 bg-slate-50/60 sticky top-0 z-10 flex justify-between items-center';
+
+      const left = document.createElement('span');
+      left.textContent = `총 ${totalCount ?? files.length}개 · 검색 결과 ${files.length}개`;
+      header.appendChild(left);
+
+      const right = document.createElement('div');
+      right.className = 'flex items-center gap-2';
+
+      if (folderStack.length > 1) {
+        const upBtn = document.createElement('button');
+        upBtn.id = 'btn-up-folder';
+        upBtn.className =
+          'px-2 py-0.5 rounded-full border border-slate-200 bg-white text-[11px] hover:bg-slate-100';
+        upBtn.textContent = '← 상위 폴더';
+        upBtn.onclick = goUpFolder;
+        right.appendChild(upBtn);
+      }
+
+      const hint = document.createElement('span');
+      hint.textContent = '파일 클릭 시 새 탭에서 열립니다. (폴더는 더블클릭으로 진입)';
+      right.appendChild(hint);
+
+      header.appendChild(right);
+      containerEl.appendChild(header);
+
+      const list = document.createElement('div');
+
+      files.forEach(file => {
+        const isFolder = file.isFolder === true ||
+          file.mimeType === 'application/vnd.google-apps.folder';
+
+        const row = document.createElement('div');
+        row.className =
+          'file-row w-full flex items-center text-left text-sm px-3 py-2 border-b border-slate-100 last:border-b-0';
+        if (isFolder) row.classList.add('cursor-pointer');
+
+        const main = document.createElement('div');
+        main.className = 'flex-1 min-w-0';
+
+        const nameEl = document.createElement('div');
+        nameEl.className = 'truncate font-medium text-slate-800 flex items-center gap-1';
+        if (isFolder) {
+          const icon = document.createElement('span');
+          icon.textContent = '📁';
+          icon.className = 'text-xs';
+          nameEl.appendChild(icon);
+        } else {
+          const icon = document.createElement('span');
+          icon.textContent = '📄';
+          icon.className = 'text-xs';
+          nameEl.appendChild(icon);
+        }
+        const nameText = document.createElement('span');
+        nameText.textContent = file.name;
+        nameEl.appendChild(nameText);
+        main.appendChild(nameEl);
+
+        const sub = document.createElement('div');
+        sub.className = 'text-[11px] text-slate-500 mt-0.5';
+        const date = file.modifiedTime
+          ? new Date(file.modifiedTime).toLocaleString()
+          : '-';
+        sub.textContent = `${file.mimeType || (isFolder ? 'folder' : '')} · 수정: ${date}`;
+        main.appendChild(sub);
+
+        row.appendChild(main);
+
+        const sizeEl = document.createElement('div');
+        sizeEl.className = 'text-[11px] text-slate-500 ml-3 whitespace-nowrap';
+        if (!isFolder && file.size) {
+          sizeEl.textContent = formatBytes(Number(file.size));
+        } else {
+          sizeEl.textContent = isFolder ? '-' : '';
+        }
+        row.appendChild(sizeEl);
+
+        if (isFolder) {
+          // 더블클릭 → 하위 폴더로 진입
+          row.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            enterSubfolder(file);
+          });
+        } else {
+          // 파일은 단일 클릭으로 오픈
+          row.addEventListener('click', () => {
+            window.open(file.url, '_blank');
+          });
+        }
+
+        list.appendChild(row);
+      });
+
+      containerEl.appendChild(list);
     }
 
     function formatBytes(bytes) {
@@ -283,10 +535,38 @@
     }
 
     // ==============================
-    // 6. onload
+    // 7. onload
     // ==============================
     window.addEventListener('load', () => {
       renderFolderList();
+      updateLoginUI();
+
+      const searchInput = document.getElementById('search-input');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          currentSearch = e.target.value || '';
+          updateFileList();
+        });
+        searchInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            e.target.value = '';
+            currentSearch = '';
+            updateFileList();
+          }
+        });
+      }
+
+      // GSI 스크립트 로딩 대기
+      const timer = setInterval(() => {
+        if (window.google && google.accounts && google.accounts.oauth2) {
+          setupAuth();
+          clearInterval(timer);
+        }
+      }, 300);
+
+      // 로그인 버튼 핸들러
+      const btnLogin = document.getElementById('btn-login');
+      if (btnLogin) btnLogin.onclick = handleLoginClick;
     });
   </script>
 </body>
